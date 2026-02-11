@@ -1762,7 +1762,8 @@ const AdminDashboard = () => {
     price: 0,
     description: "",
     sizes: "",
-    image_type: "hoodie"
+    image_type: "hoodie",
+    image_url: ""
   });
   const [newAdminComment, setNewAdminComment] = useState({ transmission_id: "", content: "" });
   const [loading, setLoading] = useState(false);
