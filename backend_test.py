@@ -1,0 +1,261 @@
+import requests
+import sys
+import json
+from datetime import datetime
+
+class TheSyncBridgeAPITester:
+    def __init__(self, base_url="https://budget-tracker-1318.preview.emergentagent.com"):
+        self.base_url = base_url
+        self.api_url = f"{base_url}/api"
+        self.tests_run = 0
+        self.tests_passed = 0
+        self.test_results = []
+
+    def run_test(self, name, method, endpoint, expected_status, data=None, params=None):
+        """Run a single API test"""
+        url = f"{self.api_url}/{endpoint}"
+        headers = {'Content-Type': 'application/json'}
+
+        self.tests_run += 1
+        print(f"\n🔍 Testing {name}...")
+        print(f"   URL: {url}")
+        
+        try:
+            if method == 'GET':
+                response = requests.get(url, headers=headers, params=params)
+            elif method == 'POST':
+                response = requests.post(url, json=data, headers=headers)
+
+            success = response.status_code == expected_status
+            
+            result = {
+                "test_name": name,
+                "endpoint": endpoint,
+                "method": method,
+                "expected_status": expected_status,
+                "actual_status": response.status_code,
+                "success": success,
+                "response_data": None,
+                "error": None
+            }
+
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                try:
+                    result["response_data"] = response.json()
+                except:
+                    result["response_data"] = response.text
+            else:
+                print(f"❌ Failed - Expected {expected_status}, got {response.status_code}")
+                try:
+                    result["error"] = response.json()
+                except:
+                    result["error"] = response.text
+
+            self.test_results.append(result)
+            return success, result["response_data"] if success else {}
+
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            result = {
+                "test_name": name,
+                "endpoint": endpoint,
+                "method": method,
+                "expected_status": expected_status,
+                "actual_status": "ERROR",
+                "success": False,
+                "response_data": None,
+                "error": str(e)
+            }
+            self.test_results.append(result)
+            return False, {}
+
+    def test_mission_status(self):
+        """Test mission status endpoint"""
+        success, response = self.run_test(
+            "Mission Status",
+            "GET",
+            "mission/status",
+            200
+        )
+        if success:
+            required_fields = ['current_day', 'total_days', 'days_remaining', 'mission_start', 'progress_percent', 'is_active']
+            for field in required_fields:
+                if field not in response:
+                    print(f"❌ Missing field: {field}")
+                    return False
+            print(f"   Current Day: {response.get('current_day')}/{response.get('total_days')}")
+            print(f"   Progress: {response.get('progress_percent')}%")
+        return success
+
+    def test_guardian_registration(self, email):
+        """Test guardian registration"""
+        success, response = self.run_test(
+            "Guardian Registration",
+            "POST",
+            "guardians/register",
+            200,
+            data={"email": email}
+        )
+        if success:
+            required_fields = ['id', 'email', 'scroll_id', 'registered_at', 'is_certified']
+            for field in required_fields:
+                if field not in response:
+                    print(f"❌ Missing field: {field}")
+                    return False, None
+            print(f"   Scroll ID: {response.get('scroll_id')}")
+            print(f"   Email: {response.get('email')}")
+            return True, response
+        return False, None
+
+    def test_duplicate_registration(self, email):
+        """Test duplicate email registration returns existing guardian"""
+        success, response = self.run_test(
+            "Duplicate Registration Check",
+            "POST",
+            "guardians/register",
+            200,
+            data={"email": email}
+        )
+        return success, response
+
+    def test_guardian_lookup(self, email):
+        """Test guardian lookup by email"""
+        success, response = self.run_test(
+            "Guardian Lookup",
+            "GET",
+            "guardians/lookup",
+            200,
+            params={"email": email}
+        )
+        return success, response
+
+    def test_guardian_count(self):
+        """Test guardian count endpoint"""
+        success, response = self.run_test(
+            "Guardian Count",
+            "GET",
+            "guardians/count",
+            200
+        )
+        if success and 'count' in response:
+            print(f"   Total Guardians: {response['count']}")
+        return success
+
+    def test_guardian_registry(self):
+        """Test guardian registry endpoint"""
+        success, response = self.run_test(
+            "Guardian Registry",
+            "GET",
+            "guardians/registry",
+            200
+        )
+        if success:
+            print(f"   Registry entries: {len(response)}")
+        return success
+
+    def test_certificate(self, scroll_id):
+        """Test certificate endpoint"""
+        success, response = self.run_test(
+            "Certificate Retrieval",
+            "GET",
+            f"certificate/{scroll_id}",
+            200
+        )
+        if success:
+            required_fields = ['scroll_id', 'registered_at', 'is_certified', 'certificate_title']
+            for field in required_fields:
+                if field not in response:
+                    print(f"❌ Missing field: {field}")
+                    return False
+            print(f"   Certificate for: {response.get('scroll_id')}")
+        return success
+
+    def test_transmissions(self):
+        """Test transmissions endpoint"""
+        success, response = self.run_test(
+            "Transmissions",
+            "GET",
+            "transmissions",
+            200
+        )
+        if success:
+            print(f"   Transmissions found: {len(response)}")
+        return success
+
+def main():
+    print("🚀 Starting TheSyncBridge API Tests")
+    print("=" * 50)
+    
+    tester = TheSyncBridgeAPITester()
+    test_email = f"test_guardian_{datetime.now().strftime('%H%M%S')}@syncbridge.com"
+    
+    # Test 1: Mission Status
+    print("\n📊 Testing Mission Status...")
+    tester.test_mission_status()
+    
+    # Test 2: Guardian Count (before registration)
+    print("\n👥 Testing Guardian Count...")
+    tester.test_guardian_count()
+    
+    # Test 3: Guardian Registration
+    print(f"\n📝 Testing Guardian Registration with {test_email}...")
+    reg_success, guardian_data = tester.test_guardian_registration(test_email)
+    
+    if not reg_success:
+        print("❌ Registration failed, stopping dependent tests")
+        print(f"\n📊 Final Results: {tester.tests_passed}/{tester.tests_run} tests passed")
+        return 1
+    
+    scroll_id = guardian_data.get('scroll_id')
+    
+    # Test 4: Duplicate Registration
+    print(f"\n🔄 Testing Duplicate Registration with {test_email}...")
+    dup_success, dup_data = tester.test_duplicate_registration(test_email)
+    if dup_success and dup_data.get('scroll_id') == scroll_id:
+        print("✅ Duplicate registration correctly returned existing guardian")
+    else:
+        print("❌ Duplicate registration did not return existing guardian")
+    
+    # Test 5: Guardian Lookup
+    print(f"\n🔍 Testing Guardian Lookup with {test_email}...")
+    lookup_success, lookup_data = tester.test_guardian_lookup(test_email)
+    if lookup_success and lookup_data.get('scroll_id') == scroll_id:
+        print("✅ Lookup correctly found guardian")
+    else:
+        print("❌ Lookup failed to find guardian")
+    
+    # Test 6: Certificate
+    print(f"\n🏆 Testing Certificate for {scroll_id}...")
+    tester.test_certificate(scroll_id)
+    
+    # Test 7: Guardian Registry
+    print("\n📋 Testing Guardian Registry...")
+    tester.test_guardian_registry()
+    
+    # Test 8: Guardian Count (after registration)
+    print("\n👥 Testing Guardian Count (after registration)...")
+    tester.test_guardian_count()
+    
+    # Test 9: Transmissions
+    print("\n📡 Testing Transmissions...")
+    tester.test_transmissions()
+    
+    # Print final results
+    print("\n" + "=" * 50)
+    print(f"📊 Final Results: {tester.tests_passed}/{tester.tests_run} tests passed")
+    
+    if tester.tests_passed == tester.tests_run:
+        print("🎉 All tests passed!")
+        return 0
+    else:
+        print("❌ Some tests failed")
+        print("\nFailed tests:")
+        for result in tester.test_results:
+            if not result['success']:
+                print(f"  - {result['test_name']}: {result.get('error', 'Status mismatch')}")
+        return 1
+
+if __name__ == "__main__":
+    sys.exit(main())
