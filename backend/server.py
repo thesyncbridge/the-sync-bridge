@@ -134,6 +134,7 @@ class ProductCreate(BaseModel):
     description: str
     sizes: Optional[List[str]] = None  # None for items without sizes
     image_type: str = "hoodie"  # hoodie, shirt, hat for preview rendering
+    image_url: Optional[str] = None  # URL to product image
 
 class Product(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -144,6 +145,7 @@ class Product(BaseModel):
     description: str
     sizes: Optional[List[str]] = None
     image_type: str = "hoodie"
+    image_url: Optional[str] = None
     created_at: str
     is_active: bool = True
 
