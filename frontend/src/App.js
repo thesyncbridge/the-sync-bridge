@@ -1341,7 +1341,7 @@ const Registry = () => {
   );
 };
 
-// Merchandise Preview Component
+// Member Gear Preview Component
 const MerchPreview = ({ type, scrollId }) => {
   const colors = {
     hoodie: "#0A0A0A",
