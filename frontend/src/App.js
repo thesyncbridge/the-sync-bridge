@@ -2161,19 +2161,92 @@ const AdminDashboard = () => {
                   onChange={(e) => setNewProduct({...newProduct, sizes: e.target.value})}
                   className="input-base mb-4"
                 />
-                <input
-                  type="url"
-                  placeholder="Product Image URL (optional - paste link to image)"
-                  value={newProduct.image_url}
-                  onChange={(e) => setNewProduct({...newProduct, image_url: e.target.value})}
-                  className="input-base mb-4"
-                />
+                
+                {/* Image Upload Section */}
+                <div className="mb-4 p-4 border border-white/10">
+                  <p className="text-[#94A3B8] text-sm mb-3 flex items-center gap-2">
+                    <Image size={16} /> Product Image
+                  </p>
+                  
+                  {/* File Upload */}
+                  <div className="mb-3">
+                    <label className="flex items-center justify-center gap-2 p-4 border border-dashed border-[#00CCFF]/30 hover:border-[#00CCFF] cursor-pointer transition-colors">
+                      <Upload size={20} className="text-[#00CCFF]" />
+                      <span className="text-[#94A3B8] text-sm">Upload Image (JPEG, PNG, GIF, WEBP - max 5MB)</span>
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/gif,image/webp"
+                        onChange={async (e) => {
+                          const file = e.target.files[0];
+                          if (!file) return;
+                          
+                          if (file.size > 5 * 1024 * 1024) {
+                            toast.error("File too large. Maximum 5MB");
+                            return;
+                          }
+                          
+                          const formData = new FormData();
+                          formData.append("file", file);
+                          
+                          try {
+                            const response = await axios.post(`${API}/upload/image`, formData, {
+                              headers: { 
+                                Authorization: `Basic ${authHeader}`,
+                                "Content-Type": "multipart/form-data"
+                              }
+                            });
+                            const fullUrl = `${BACKEND_URL}${response.data.url}`;
+                            setNewProduct({...newProduct, image_url: fullUrl});
+                            toast.success("Image uploaded!");
+                          } catch (error) {
+                            toast.error(error.response?.data?.detail || "Upload failed");
+                          }
+                        }}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                  
+                  {/* OR divider */}
+                  <div className="flex items-center gap-4 mb-3">
+                    <div className="flex-grow h-px bg-white/10"></div>
+                    <span className="text-[#475569] text-xs">OR</span>
+                    <div className="flex-grow h-px bg-white/10"></div>
+                  </div>
+                  
+                  {/* URL Input */}
+                  <input
+                    type="url"
+                    placeholder="Paste image URL"
+                    value={newProduct.image_url}
+                    onChange={(e) => setNewProduct({...newProduct, image_url: e.target.value})}
+                    className="input-base"
+                  />
+                </div>
+                
+                {/* Image Preview */}
                 {newProduct.image_url && (
-                  <div className="mb-4 p-2 border border-white/10">
+                  <div className="mb-4 p-2 border border-[#00CCFF]/30 relative">
+                    <button
+                      type="button"
+                      onClick={() => setNewProduct({...newProduct, image_url: ""})}
+                      className="absolute top-2 right-2 text-[#FF3B30] hover:text-red-400 bg-black/80 p-1"
+                    >
+                      <X size={16} />
+                    </button>
                     <p className="text-[#475569] text-xs mb-2">Image Preview:</p>
-                    <img src={newProduct.image_url} alt="Preview" className="max-h-32 object-contain" onError={(e) => e.target.style.display='none'} />
+                    <img 
+                      src={newProduct.image_url} 
+                      alt="Preview" 
+                      className="max-h-40 object-contain mx-auto" 
+                      onError={(e) => {
+                        e.target.style.display='none';
+                        toast.error("Failed to load image");
+                      }} 
+                    />
                   </div>
                 )}
+                
                 <div className="flex gap-4">
                   <button type="submit" disabled={loading} className="btn-primary">
                     {loading ? "Adding..." : "Add Product"}
