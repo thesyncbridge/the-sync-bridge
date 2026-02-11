@@ -196,13 +196,22 @@ const Navigation = () => {
             >
               Store
             </NavLink>
-            <NavLink
-              to="/register"
-              className="btn-primary text-center mt-2"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Become Guardian
-            </NavLink>
+            {guardian ? (
+              <div className="text-center pt-2 border-t border-white/10">
+                <span className="font-mono text-[#00CCFF] text-sm block mb-2">{guardian.scroll_id}</span>
+                <button onClick={() => { logout(); setMobileMenuOpen(false); }} className="text-[#94A3B8] text-sm">
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <NavLink
+                to="/login"
+                className="btn-primary text-center mt-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Login
+              </NavLink>
+            )}
           </div>
         </div>
       )}
