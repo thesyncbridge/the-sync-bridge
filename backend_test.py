@@ -395,6 +395,33 @@ def main():
     print("\n📡 Testing Transmissions...")
     tester.test_transmissions()
     
+    # Test 10: Admin Login
+    print("\n🔐 Testing Admin Login...")
+    admin_success, auth_string = tester.test_admin_login()
+    
+    if admin_success:
+        # Test 11: Add Transmission (Admin)
+        print("\n➕ Testing Add Transmission (Admin)...")
+        add_success, transmission_data = tester.test_add_transmission(auth_string)
+        
+        if add_success:
+            # Test 12: Delete Transmission (Admin)
+            print("\n🗑️ Testing Delete Transmission (Admin)...")
+            tester.test_delete_transmission(auth_string, transmission_data.get('id'))
+    
+    # Test 13: Merchandise
+    print("\n🛍️ Testing Merchandise...")
+    tester.test_merchandise()
+    
+    # Test 14: Create Order
+    print(f"\n📦 Testing Create Order with {scroll_id}...")
+    order_success, order_data = tester.test_create_order(scroll_id)
+    
+    if admin_success:
+        # Test 15: Get Orders (Admin)
+        print("\n📋 Testing Get Orders (Admin)...")
+        tester.test_get_orders(auth_string)
+    
     # Print final results
     print("\n" + "=" * 50)
     print(f"📊 Final Results: {tester.tests_passed}/{tester.tests_run} tests passed")
