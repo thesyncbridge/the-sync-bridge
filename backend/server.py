@@ -429,13 +429,22 @@ async def create_order(order_data: OrderCreate):
     if not guardian:
         raise HTTPException(status_code=404, detail="Guardian not found. Please register first.")
     
+    # Get available merchandise
+    products = await db.products.find({"is_active": True}, {"_id": 0}).to_list(100)
+    if not products:
+        # Use default products if none in DB
+        merchandise = DEFAULT_MERCHANDISE
+    else:
+        # Convert to dict format
+        merchandise = {p["product_type"]: p for p in products}
+    
     # Calculate total
     total = 0.0
     items_with_details = []
     for item in order_data.items:
-        if item.product_type not in MERCHANDISE:
+        if item.product_type not in merchandise:
             raise HTTPException(status_code=400, detail=f"Invalid product: {item.product_type}")
-        product = MERCHANDISE[item.product_type]
+        product = merchandise[item.product_type]
         item_total = product["price"] * item.quantity
         total += item_total
         items_with_details.append({
