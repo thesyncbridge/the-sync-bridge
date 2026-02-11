@@ -242,20 +242,28 @@ async def get_mission_status_endpoint():
 @api_router.post("/guardians/register", response_model=GuardianResponse)
 async def register_guardian(guardian_data: GuardianCreate):
     """Register a new Blue Guardian and generate Scroll ID"""
+    # Validate password
+    if len(guardian_data.password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+    
     # Check if email already registered
     existing = await db.guardians.find_one(
         {"email": guardian_data.email.lower()},
         {"_id": 0}
     )
     if existing:
-        return GuardianResponse(**existing)
+        raise HTTPException(status_code=400, detail="Email already registered. Please login instead.")
     
     # Generate unique Scroll ID
     scroll_id = await generate_scroll_id()
     
+    # Hash password
+    password_hash = bcrypt.hashpw(guardian_data.password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    
     guardian = Guardian(
         email=guardian_data.email.lower(),
         scroll_id=scroll_id,
+        password_hash=password_hash,
         registered_at=datetime.now(timezone.utc).isoformat(),
         is_certified=True
     )
@@ -263,7 +271,29 @@ async def register_guardian(guardian_data: GuardianCreate):
     doc = guardian.model_dump()
     await db.guardians.insert_one(doc)
     
-    return GuardianResponse(**doc)
+    return GuardianResponse(
+        id=guardian.id,
+        email=guardian.email,
+        scroll_id=guardian.scroll_id,
+        registered_at=guardian.registered_at,
+        is_certified=guardian.is_certified
+    )
+
+@api_router.post("/guardians/login", response_model=GuardianResponse)
+async def login_guardian(login_data: GuardianLogin):
+    """Login a guardian with Scroll ID and password"""
+    guardian = await db.guardians.find_one(
+        {"scroll_id": login_data.scroll_id.upper()},
+        {"_id": 0}
+    )
+    if not guardian:
+        raise HTTPException(status_code=401, detail="Invalid Scroll ID or password")
+    
+    # Verify password
+    if not bcrypt.checkpw(login_data.password.encode('utf-8'), guardian.get('password_hash', '').encode('utf-8')):
+        raise HTTPException(status_code=401, detail="Invalid Scroll ID or password")
+    
+    return GuardianResponse(**{k: v for k, v in guardian.items() if k != 'password_hash'})
 
 @api_router.get("/guardians/lookup")
 async def lookup_guardian(email: str):
