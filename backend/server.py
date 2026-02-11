@@ -528,6 +528,14 @@ async def update_order_status(order_id: str, status: str, admin: bool = Depends(
         raise HTTPException(status_code=404, detail="Order not found")
     return {"message": "Order status updated", "status": status}
 
+@api_router.delete("/orders/{order_id}")
+async def delete_order(order_id: str, admin: bool = Depends(verify_admin)):
+    """Delete an order (Admin only)"""
+    result = await db.orders.delete_one({"id": order_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Order not found")
+    return {"message": "Order deleted successfully"}
+
 # ============ COMMENTS ============
 
 @api_router.post("/comments", response_model=Comment)
