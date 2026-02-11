@@ -828,53 +828,11 @@ const Transmissions = () => {
         {/* Transmissions Grid */}
         <div className="space-y-6">
           {displayTransmissions.map((transmission, index) => (
-            <div
-              key={transmission.id}
-              className="transmission-card p-6 fade-in-up"
-              style={{ animationDelay: `${index * 0.1}s` }}
-              data-testid={`transmission-${transmission.day_number}`}
-            >
-              <div className="flex items-start gap-6">
-                {/* Day Number */}
-                <div className="flex-shrink-0 w-20 h-20 border border-[#00CCFF]/30 flex flex-col items-center justify-center">
-                  <span className="font-mono text-xs text-[#475569] uppercase">Day</span>
-                  <span className="font-mono text-2xl text-[#00CCFF]">
-                    {transmission.day_number}
-                  </span>
-                </div>
-
-                {/* Content */}
-                <div className="flex-grow">
-                  <h3 className="font-heading font-semibold text-xl uppercase tracking-wide mb-2">
-                    {transmission.title}
-                  </h3>
-                  <p className="text-[#94A3B8] text-sm leading-relaxed mb-4">
-                    {transmission.description}
-                  </p>
-
-                  {/* Action Buttons */}
-                  <div className="flex items-center gap-4">
-                    {transmission.video_url ? (
-                      <a
-                        href={transmission.video_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-[#00CCFF] hover:underline text-sm font-heading uppercase tracking-wider"
-                      >
-                        <Play size={16} />
-                        Watch Transmission
-                        <ExternalLink size={14} />
-                      </a>
-                    ) : (
-                      <span className="flex items-center gap-2 text-[#475569] text-sm font-heading uppercase tracking-wider">
-                        <Clock size={16} />
-                        Coming Soon
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
+            <TransmissionCard 
+              key={transmission.id} 
+              transmission={transmission} 
+              index={index}
+            />
           ))}
         </div>
 
@@ -885,6 +843,256 @@ const Transmissions = () => {
           </p>
         </div>
       </div>
+    </div>
+  );
+};
+
+// Transmission Card with Comments
+const TransmissionCard = ({ transmission, index }) => {
+  const { guardian } = useGuardian();
+  const [showComments, setShowComments] = useState(false);
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState("");
+  const [replyTo, setReplyTo] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const fetchComments = async () => {
+    try {
+      const response = await axios.get(`${API}/comments/${transmission.id}`);
+      setComments(response.data);
+    } catch (error) {
+      console.error("Failed to fetch comments");
+    }
+  };
+
+  useEffect(() => {
+    if (showComments) {
+      fetchComments();
+    }
+  }, [showComments, transmission.id]);
+
+  const submitComment = async () => {
+    if (!newComment.trim() || !guardian) return;
+    setLoading(true);
+    try {
+      await axios.post(`${API}/comments`, {
+        transmission_id: transmission.id,
+        scroll_id: guardian.scroll_id,
+        content: newComment,
+        parent_id: replyTo
+      });
+      setNewComment("");
+      setReplyTo(null);
+      fetchComments();
+      toast.success("Comment posted");
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Failed to post comment");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteComment = async (commentId) => {
+    if (!guardian) return;
+    try {
+      await axios.delete(`${API}/comments/${commentId}/user?scroll_id=${guardian.scroll_id}`);
+      fetchComments();
+      toast.success("Comment deleted");
+    } catch (error) {
+      toast.error("Failed to delete comment");
+    }
+  };
+
+  // Organize comments into threads
+  const rootComments = comments.filter(c => !c.parent_id);
+  const getReplies = (parentId) => comments.filter(c => c.parent_id === parentId);
+
+  return (
+    <div
+      className="transmission-card p-6 fade-in-up"
+      style={{ animationDelay: `${index * 0.1}s` }}
+      data-testid={`transmission-${transmission.day_number}`}
+    >
+      <div className="flex items-start gap-4 md:gap-6">
+        {/* Day Number */}
+        <div className="flex-shrink-0 w-16 h-16 md:w-20 md:h-20 border border-[#00CCFF]/30 flex flex-col items-center justify-center">
+          <span className="font-mono text-xs text-[#475569] uppercase">Day</span>
+          <span className="font-mono text-xl md:text-2xl text-[#00CCFF]">
+            {transmission.day_number}
+          </span>
+        </div>
+
+        {/* Content */}
+        <div className="flex-grow">
+          <h3 className="font-heading font-semibold text-lg md:text-xl uppercase tracking-wide mb-2">
+            {transmission.title}
+          </h3>
+          <p className="text-[#94A3B8] text-sm leading-relaxed mb-4">
+            {transmission.description}
+          </p>
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-4 flex-wrap">
+            {transmission.video_url ? (
+              <a
+                href={transmission.video_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-[#00CCFF] hover:underline text-sm font-heading uppercase tracking-wider"
+              >
+                <Play size={16} />
+                Watch
+                <ExternalLink size={14} />
+              </a>
+            ) : (
+              <span className="flex items-center gap-2 text-[#475569] text-sm font-heading uppercase tracking-wider">
+                <Clock size={16} />
+                Coming Soon
+              </span>
+            )}
+            <button
+              onClick={() => setShowComments(!showComments)}
+              className="flex items-center gap-2 text-[#94A3B8] hover:text-[#00CCFF] text-sm font-heading uppercase tracking-wider transition-colors"
+              data-testid={`toggle-comments-${transmission.day_number}`}
+            >
+              <MessageCircle size={16} />
+              {comments.length > 0 ? `${comments.length} Comments` : "Comments"}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Comments Section */}
+      {showComments && (
+        <div className="mt-6 pt-6 border-t border-white/10" data-testid="comments-section">
+          {/* Comment Input */}
+          {guardian ? (
+            <div className="mb-6">
+              {replyTo && (
+                <div className="flex items-center gap-2 mb-2 text-sm text-[#94A3B8]">
+                  <Reply size={14} />
+                  Replying to comment
+                  <button onClick={() => setReplyTo(null)} className="text-[#FF3B30] text-xs">Cancel</button>
+                </div>
+              )}
+              <div className="flex gap-3">
+                <div className="flex-shrink-0 w-8 h-8 border border-[#00CCFF]/30 flex items-center justify-center">
+                  <span className="font-mono text-[#00CCFF] text-xs">{guardian.scroll_id.slice(-4)}</span>
+                </div>
+                <div className="flex-grow flex gap-2">
+                  <input
+                    type="text"
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder="Add a comment..."
+                    className="input-base flex-grow"
+                    onKeyPress={(e) => e.key === "Enter" && submitComment()}
+                    data-testid="comment-input"
+                  />
+                  <button
+                    onClick={submitComment}
+                    disabled={loading || !newComment.trim()}
+                    className="btn-primary px-4"
+                    data-testid="submit-comment"
+                  >
+                    <Send size={16} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="mb-6 p-4 border border-white/10 text-center">
+              <p className="text-[#94A3B8] text-sm mb-2">Login to comment</p>
+              <a href="/login" className="text-[#00CCFF] text-sm hover:underline">
+                Enter your Scroll ID →
+              </a>
+            </div>
+          )}
+
+          {/* Comments List */}
+          <div className="space-y-4">
+            {rootComments.length === 0 ? (
+              <p className="text-[#475569] text-sm text-center py-4">No comments yet. Be the first!</p>
+            ) : (
+              rootComments.map((comment) => (
+                <CommentThread
+                  key={comment.id}
+                  comment={comment}
+                  replies={getReplies(comment.id)}
+                  guardian={guardian}
+                  onReply={(id) => setReplyTo(id)}
+                  onDelete={deleteComment}
+                  getReplies={getReplies}
+                />
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Comment Thread Component
+const CommentThread = ({ comment, replies, guardian, onReply, onDelete, getReplies, depth = 0 }) => {
+  const isOwner = guardian && guardian.scroll_id === comment.scroll_id;
+  const maxDepth = 3;
+
+  return (
+    <div className={`${depth > 0 ? "ml-6 md:ml-10 pl-4 border-l border-white/10" : ""}`}>
+      <div className="flex gap-3">
+        <div className="flex-shrink-0 w-8 h-8 border border-[#00CCFF]/30 flex items-center justify-center">
+          <span className="font-mono text-[#00CCFF] text-xs">
+            {comment.scroll_id === "ADMIN" ? "ADM" : comment.scroll_id.slice(-4)}
+          </span>
+        </div>
+        <div className="flex-grow">
+          <div className="flex items-center gap-2 mb-1">
+            <span className={`font-mono text-sm ${comment.scroll_id === "ADMIN" ? "text-[#FF3B30]" : "text-[#00CCFF]"}`}>
+              {comment.scroll_id}
+            </span>
+            <span className="text-[#475569] text-xs">
+              {new Date(comment.created_at).toLocaleDateString()}
+            </span>
+          </div>
+          <p className="text-[#94A3B8] text-sm mb-2">{comment.content}</p>
+          <div className="flex items-center gap-4">
+            {guardian && depth < maxDepth && (
+              <button
+                onClick={() => onReply(comment.id)}
+                className="text-[#475569] hover:text-[#00CCFF] text-xs flex items-center gap-1 transition-colors"
+              >
+                <Reply size={12} /> Reply
+              </button>
+            )}
+            {isOwner && (
+              <button
+                onClick={() => onDelete(comment.id)}
+                className="text-[#475569] hover:text-[#FF3B30] text-xs flex items-center gap-1 transition-colors"
+              >
+                <Trash2 size={12} /> Delete
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+      {/* Nested Replies */}
+      {replies.length > 0 && (
+        <div className="mt-3 space-y-3">
+          {replies.map((reply) => (
+            <CommentThread
+              key={reply.id}
+              comment={reply}
+              replies={getReplies(reply.id)}
+              guardian={guardian}
+              onReply={onReply}
+              onDelete={onDelete}
+              getReplies={getReplies}
+              depth={depth + 1}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
