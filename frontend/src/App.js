@@ -2231,8 +2231,17 @@ const AdminDashboard = () => {
                       {item.product_name} {item.size && `(${item.size})`} × {item.quantity} - ${item.item_total.toFixed(2)}
                     </div>
                   ))}
-                  <div className="mt-3 text-xs text-[#475569]">
-                    Ship to: {order.shipping_address}, {order.shipping_city}, {order.shipping_state} {order.shipping_zip}
+                  <div className="mt-3 flex items-center justify-between">
+                    <span className="text-xs text-[#475569]">
+                      Ship to: {order.shipping_address}, {order.shipping_city}, {order.shipping_state} {order.shipping_zip}
+                    </span>
+                    <button
+                      onClick={() => deleteOrder(order.id)}
+                      className="text-[#FF3B30] hover:text-red-400 text-xs flex items-center gap-1"
+                      data-testid={`delete-order-${order.id}`}
+                    >
+                      <Trash2 size={14} /> Delete Order
+                    </button>
                   </div>
                 </div>
               </div>
