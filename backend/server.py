@@ -345,14 +345,59 @@ async def admin_login(credentials: HTTPBasicCredentials = Depends(security)):
 @api_router.get("/merchandise")
 async def get_merchandise():
     """Get all available merchandise"""
-    return MERCHANDISE
+    products = await db.products.find({"is_active": True}, {"_id": 0}).to_list(100)
+    if not products:
+        # Return default products if none in DB
+        return DEFAULT_MERCHANDISE
+    # Convert to dict format
+    return {p["product_type"]: p for p in products}
+
+@api_router.get("/merchandise/list")
+async def get_merchandise_list():
+    """Get all merchandise as list (for admin)"""
+    products = await db.products.find({}, {"_id": 0}).to_list(100)
+    return products
+
+@api_router.post("/merchandise", response_model=Product)
+async def create_product(product_data: ProductCreate, admin: bool = Depends(verify_admin)):
+    """Create a new product (Admin only)"""
+    # Check if product_type already exists
+    existing = await db.products.find_one({"product_type": product_data.product_type})
+    if existing:
+        raise HTTPException(status_code=400, detail="Product type already exists")
+    
+    product = Product(
+        product_type=product_data.product_type,
+        name=product_data.name,
+        price=product_data.price,
+        description=product_data.description,
+        sizes=product_data.sizes,
+        image_type=product_data.image_type,
+        created_at=datetime.now(timezone.utc).isoformat(),
+        is_active=True
+    )
+    
+    doc = product.model_dump()
+    await db.products.insert_one(doc)
+    return product
+
+@api_router.delete("/merchandise/{product_id}")
+async def delete_product(product_id: str, admin: bool = Depends(verify_admin)):
+    """Delete a product (Admin only)"""
+    result = await db.products.delete_one({"id": product_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return {"message": "Product deleted successfully"}
 
 @api_router.get("/merchandise/{product_type}")
 async def get_merchandise_item(product_type: str):
     """Get specific merchandise item"""
-    if product_type not in MERCHANDISE:
+    product = await db.products.find_one({"product_type": product_type, "is_active": True}, {"_id": 0})
+    if not product:
+        if product_type in DEFAULT_MERCHANDISE:
+            return {product_type: DEFAULT_MERCHANDISE[product_type]}
         raise HTTPException(status_code=404, detail="Product not found")
-    return {product_type: MERCHANDISE[product_type]}
+    return {product_type: product}
 
 # ============ ORDERS ============
 
