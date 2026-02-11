@@ -640,6 +640,9 @@ async def get_all_comments(admin: bool = Depends(verify_admin)):
 # Include the router in the main app
 app.include_router(api_router)
 
+# Mount static files for uploads
+app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
