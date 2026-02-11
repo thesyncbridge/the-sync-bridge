@@ -2197,14 +2197,21 @@ const AdminDashboard = () => {
                 products.map((p) => (
                   <div key={p.id} className="card-base p-4 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 border border-[#00CCFF]/30 flex items-center justify-center">
-                        <Shirt className="w-6 h-6 text-[#00CCFF]" />
-                      </div>
+                      {p.image_url ? (
+                        <div className="w-12 h-12 border border-[#00CCFF]/30 overflow-hidden">
+                          <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
+                        </div>
+                      ) : (
+                        <div className="w-12 h-12 border border-[#00CCFF]/30 flex items-center justify-center">
+                          <Shirt className="w-6 h-6 text-[#00CCFF]" />
+                        </div>
+                      )}
                       <div>
                         <h3 className="font-heading uppercase">{p.name}</h3>
                         <p className="text-[#94A3B8] text-sm">
                           ${p.price} • {p.product_type} • {p.sizes ? p.sizes.join(", ") : "No sizes"}
                         </p>
+                        {p.image_url && <p className="text-[#475569] text-xs truncate max-w-xs">Image: {p.image_url}</p>}
                       </div>
                     </div>
                     <button onClick={() => deleteProduct(p.id)} className="text-[#FF3B30] hover:text-red-400 p-2">
