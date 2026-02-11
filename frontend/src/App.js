@@ -2215,6 +2215,69 @@ const AdminDashboard = () => {
             )}
           </div>
         )}
+
+        {/* Comments Tab */}
+        {activeTab === "comments" && (
+          <div>
+            {/* Add Admin Comment */}
+            <div className="card-base p-6 mb-6">
+              <h3 className="font-heading uppercase text-sm text-[#94A3B8] mb-4">Post as Admin</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <select
+                  value={newAdminComment.transmission_id}
+                  onChange={(e) => setNewAdminComment({...newAdminComment, transmission_id: e.target.value})}
+                  className="input-base bg-black"
+                >
+                  <option value="">Select Transmission</option>
+                  {transmissions.map(t => (
+                    <option key={t.id} value={t.id}>Day {t.day_number}: {t.title}</option>
+                  ))}
+                </select>
+                <input
+                  type="text"
+                  placeholder="Comment content"
+                  value={newAdminComment.content}
+                  onChange={(e) => setNewAdminComment({...newAdminComment, content: e.target.value})}
+                  className="input-base md:col-span-2"
+                />
+              </div>
+              <button onClick={addAdminComment} disabled={loading} className="btn-primary">
+                {loading ? "Posting..." : "Post Comment"}
+              </button>
+            </div>
+
+            {/* Comments List */}
+            <div className="space-y-3">
+              {comments.filter(c => !c.is_deleted).length === 0 ? (
+                <p className="text-[#475569] text-center py-8">No comments yet.</p>
+              ) : (
+                comments.filter(c => !c.is_deleted).map((comment) => {
+                  const transmission = transmissions.find(t => t.id === comment.transmission_id);
+                  return (
+                    <div key={comment.id} className="card-base p-4 flex items-start justify-between gap-4">
+                      <div className="flex-grow">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className={`font-mono text-sm ${comment.scroll_id === "ADMIN" ? "text-[#FF3B30]" : "text-[#00CCFF]"}`}>
+                            {comment.scroll_id}
+                          </span>
+                          <span className="text-[#475569] text-xs">
+                            on Day {transmission?.day_number || "?"}: {transmission?.title || "Unknown"}
+                          </span>
+                          {comment.parent_id && <span className="text-[#475569] text-xs">(reply)</span>}
+                        </div>
+                        <p className="text-[#94A3B8] text-sm">{comment.content}</p>
+                        <span className="text-[#475569] text-xs">{new Date(comment.created_at).toLocaleString()}</span>
+                      </div>
+                      <button onClick={() => deleteComment(comment.id)} className="text-[#FF3B30] hover:text-red-400 p-2">
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
