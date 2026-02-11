@@ -26,9 +26,26 @@ app = FastAPI()
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
+# Simple Admin Auth
+security = HTTPBasic()
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'syncbridge325')
+
+def verify_admin(credentials: HTTPBasicCredentials = Depends(security)):
+    correct_password = secrets.compare_digest(credentials.password, ADMIN_PASSWORD)
+    if not correct_password:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    return True
+
 # Mission Configuration
 MISSION_START_DATE = date(2026, 2, 22)
 MISSION_TOTAL_DAYS = 325
+
+# Merchandise Configuration
+MERCHANDISE = {
+    "hoodie": {"name": "Guardian Hoodie", "price": 65.00, "description": "Premium black hoodie with sacred geometry logo and your personalized Scroll ID"},
+    "shirt": {"name": "Guardian T-Shirt", "price": 35.00, "description": "Classic black t-shirt with sacred geometry logo and your personalized Scroll ID"},
+    "hat": {"name": "Guardian Cap", "price": 30.00, "description": "Black fitted cap with sacred geometry logo and your personalized Scroll ID"}
+}
 
 # ============ MODELS ============
 
