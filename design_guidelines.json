@@ -1,0 +1,131 @@
+{
+  "project_name": "TheSyncBridge",
+  "design_philosophy": {
+    "identity": "E1 - Anti-AI Designer",
+    "core_concept": "Neon Noir x Sacred Geometry",
+    "vibe": "Mysterious, High-Tech, Spiritual, Urgent",
+    "principles": [
+      "Fusion over Imitation: Mix Plasma Physics with Ancient Mysticism.",
+      "Emotion First: Every interaction should feel like a ritual.",
+      "Contrast: Deepest Blacks vs Electric Blue Light.",
+      "Geometric Tension: Use triangles and hexagons, avoid soft circles."
+    ]
+  },
+  "typography": {
+    "headings": {
+      "font_family": "Rajdhani, sans-serif",
+      "weights": ["600", "700"],
+      "usage": "All section titles, hero text, and data displays.",
+      "style": "Uppercase, tracking-wide"
+    },
+    "body": {
+      "font_family": "Space Grotesk, sans-serif",
+      "weights": ["300", "400", "500"],
+      "usage": "Paragraphs, inputs, and small labels.",
+      "style": "Clean, legible, slightly technical"
+    },
+    "mono": {
+      "font_family": "JetBrains Mono, monospace",
+      "usage": "Scroll IDs, Mission Clock, Code snippets, Coordinates"
+    }
+  },
+  "colors": {
+    "palette": {
+      "background": {
+        "default": "#050505",
+        "paper": "#0A0A0A",
+        "subtle": "#111111"
+      },
+      "primary": {
+        "main": "#00CCFF",
+        "glow": "rgba(0, 204, 255, 0.6)",
+        "dim": "rgba(0, 204, 255, 0.1)"
+      },
+      "text": {
+        "primary": "#FFFFFF",
+        "secondary": "#94A3B8",
+        "muted": "#475569"
+      },
+      "accent": {
+        "cyan": "#00E5FF",
+        "slate": "#1E293B",
+        "error": "#FF3B30"
+      }
+    },
+    "gradients": {
+      "plasma": "linear-gradient(135deg, #00CCFF 0%, #0066FF 100%)",
+      "void": "radial-gradient(circle at center, #111111 0%, #050505 100%)",
+      "scanline": "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 204, 255, 0.05) 3px)"
+    }
+  },
+  "visual_enhancers": {
+    "borders": "1px solid rgba(0, 204, 255, 0.2)",
+    "glassmorphism": {
+      "tech_glass": "backdrop-filter: blur(12px); background: rgba(10, 10, 10, 0.7); border: 1px solid rgba(0, 204, 255, 0.15);"
+    },
+    "shadows": {
+      "neon": "0 0 10px rgba(0, 204, 255, 0.3), 0 0 20px rgba(0, 204, 255, 0.1)",
+      "depth": "0 10px 30px -10px rgba(0, 0, 0, 0.8)"
+    },
+    "decorations": [
+      "Sacred Geometry SVG overlays (Hexagons, Triangles) at 5% opacity",
+      "Glowing horizontal lines (separators)",
+      "Corner accents (brackets) on cards"
+    ]
+  },
+  "layout_strategy": {
+    "grid_system": "Bento Grid (Asymmetrical)",
+    "spacing": "Generous (Tailwind p-8, p-12, p-24)",
+    "container": "Max-width 1400px, centered",
+    "z_index": {
+      "background": -1,
+      "content": 10,
+      "overlay": 50,
+      "modal": 100
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-transparent border border-[#00CCFF] text-[#00CCFF] hover:bg-[#00CCFF] hover:text-black transition-all duration-300 uppercase tracking-widest text-sm font-bold shadow-[0_0_10px_rgba(0,204,255,0.2)] hover:shadow-[0_0_20px_rgba(0,204,255,0.6)] rounded-none clip-path-polygon",
+      "secondary": "text-gray-400 hover:text-white hover:tracking-widest transition-all duration-300"
+    },
+    "cards": {
+      "style": "bg-[#0A0A0A] border border-white/10 hover:border-[#00CCFF]/50 transition-colors duration-300 relative overflow-hidden group",
+      "content": "p-6 or p-8",
+      "hover_effect": "Add a subtle 'scanline' moving down on hover"
+    },
+    "inputs": {
+      "style": "bg-black/50 border-b border-white/20 focus:border-[#00CCFF] outline-none text-white placeholder-gray-600 py-3 px-4 transition-all w-full font-mono"
+    },
+    "mission_clock": {
+      "style": "font-mono text-4xl md:text-6xl text-[#00CCFF] tracking-tighter drop-shadow-[0_0_10px_rgba(0,204,255,0.8)]"
+    }
+  },
+  "image_urls": {
+    "hero_background": {
+      "url": "https://images.unsplash.com/photo-1760224255354-77b8d96df876?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NDh8MHwxfHNlYXJjaHwxfHxhYnN0cmFjdCUyMGJsdWUlMjBwbGFzbWElMjBlbmVyZ3klMjB3YXZlcyUyMGRhcmslMjBiYWNrZ3JvdW5kfGVufDB8fHx8MTc3MDgzMDg4MHww&ixlib=rb-4.1.0&q=85",
+      "description": "Abstract blue plasma streaks for Hero Section background. Overlay with heavy black gradient."
+    },
+    "texture_overlay": {
+      "url": "https://images.unsplash.com/photo-1767472718853-f2014b8fc231?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NDh8MHwxfHNlYXJjaHwzfHxhYnN0cmFjdCUyMGJsdWUlMjBwbGFzbWElMjBlbmVyZ3klMjB3YXZlcyUyMGRhcmslMjBiYWNrZ3JvdW5kfGVufDB8fHx8MTc3MDgzMDg4MHww&ixlib=rb-4.1.0&q=85",
+      "description": "Vortex texture for subtle section backgrounds or card hovers."
+    }
+  },
+  "instructions_to_main_agent": [
+    "INSTALL FONTS: Add '@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@300;400;500&family=JetBrains+Mono:wght@400&display=swap');' to index.css",
+    "THEME SETUP: Ensure Tailwind config uses the specific colors defined above. Do not use default slate/gray.",
+    "NO ROUNDED CORNERS: Set 'rounded-none' or very small 'rounded-sm' (2px) for all elements to maintain the 'Sharp/Tech' look.",
+    "GLOW EFFECTS: Use 'drop-shadow' and 'box-shadow' generously on interactive elements.",
+    "ANIMATIONS: Implement 'framer-motion' for entrance effects. Elements should slide in with a 'glitch' or 'fade-up' effect.",
+    "SCROLL ID LOGIC: Generate IDs like 'SB-XXXX' where X is random digit. Display it like a serial number.",
+    "MISSION CLOCK: Calculate days remaining from NOW until Feb 22, 2026. Total duration is 325 days.",
+    "DATA-TESTID: Add 'data-testid' to all buttons, inputs, and key displays (clock, scroll ID)."
+  ],
+  "universal_guidelines": [
+    "Do not use gradients for text unless it's a very large headline.",
+    "Avoid 'Inter' font. Use 'Space Grotesk' for body.",
+    "Never use pure white backgrounds. Always dark.",
+    "Use 'sonner' for notifications.",
+    "Use 'lucide-react' for icons (Triangle, Hexagon, Activity, Zap, Globe)."
+  ]
+}
