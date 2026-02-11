@@ -1604,6 +1604,68 @@ const Store = () => {
   );
 };
 
+// Guardian Login Page
+const GuardianLogin = () => {
+  const [scrollId, setScrollId] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { login } = useGuardian();
+  const navigate = useNavigate();
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    if (!scrollId) return;
+    setLoading(true);
+    try {
+      const response = await axios.get(`${API}/guardians/${scrollId.toUpperCase()}`);
+      login(response.data);
+      toast.success(`Welcome back, ${response.data.scroll_id}!`);
+      navigate("/transmissions");
+    } catch (error) {
+      toast.error("Scroll ID not found. Please register first.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen pt-24 pb-16 px-6 flex items-center justify-center" data-testid="guardian-login">
+      <div className="max-w-md w-full card-base p-8">
+        <div className="text-center mb-8">
+          <Award className="w-12 h-12 text-[#00CCFF] mx-auto mb-4" />
+          <h1 className="font-heading font-bold text-2xl uppercase tracking-wide">
+            Guardian <span className="text-[#00CCFF]">Login</span>
+          </h1>
+          <p className="text-[#94A3B8] text-sm mt-2">
+            Enter your Scroll ID to access comments
+          </p>
+        </div>
+        <form onSubmit={handleLogin}>
+          <input
+            type="text"
+            value={scrollId}
+            onChange={(e) => setScrollId(e.target.value.toUpperCase())}
+            placeholder="SB-0001"
+            className="input-base mb-6 text-center font-mono text-lg"
+            data-testid="guardian-scroll-id"
+          />
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn-primary w-full"
+            data-testid="guardian-login-btn"
+          >
+            {loading ? "Verifying..." : "Enter"}
+          </button>
+        </form>
+        <p className="text-[#475569] text-xs text-center mt-4">
+          Don't have a Scroll ID?{" "}
+          <a href="/register" className="text-[#00CCFF] hover:underline">Register here</a>
+        </p>
+      </div>
+    </div>
+  );
+};
+
 // Admin Login Page
 const AdminLogin = () => {
   const [password, setPassword] = useState("");
