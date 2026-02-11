@@ -1785,21 +1785,28 @@ const Store = () => {
 // Guardian Login Page
 const GuardianLogin = () => {
   const [scrollId, setScrollId] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { login } = useGuardian();
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (!scrollId) return;
+    if (!scrollId || !password) {
+      toast.error("Please enter your Scroll ID and password");
+      return;
+    }
     setLoading(true);
     try {
-      const response = await axios.get(`${API}/guardians/${scrollId.toUpperCase()}`);
+      const response = await axios.post(`${API}/guardians/login`, {
+        scroll_id: scrollId.toUpperCase(),
+        password: password
+      });
       login(response.data);
       toast.success(`Welcome back, ${response.data.scroll_id}!`);
       navigate("/transmissions");
     } catch (error) {
-      toast.error("Scroll ID not found. Please register first.");
+      toast.error(error.response?.data?.detail || "Invalid Scroll ID or password");
     } finally {
       setLoading(false);
     }
@@ -1814,29 +1821,49 @@ const GuardianLogin = () => {
             Guardian <span className="text-[#00CCFF]">Login</span>
           </h1>
           <p className="text-[#94A3B8] text-sm mt-2">
-            Enter your Scroll ID to access comments
+            Enter your Scroll ID and password
           </p>
         </div>
         <form onSubmit={handleLogin}>
-          <input
-            type="text"
-            value={scrollId}
-            onChange={(e) => setScrollId(e.target.value.toUpperCase())}
-            placeholder="SB-0001"
-            className="input-base mb-6 text-center font-mono text-lg"
-            data-testid="guardian-scroll-id"
-          />
+          <div className="mb-4">
+            <label className="block text-[#94A3B8] text-sm uppercase tracking-wider mb-2 font-heading">
+              Scroll ID
+            </label>
+            <input
+              type="text"
+              value={scrollId}
+              onChange={(e) => setScrollId(e.target.value.toUpperCase())}
+              placeholder="SB-0001"
+              className="input-base text-center font-mono text-lg"
+              data-testid="guardian-scroll-id"
+              required
+            />
+          </div>
+          <div className="mb-6">
+            <label className="block text-[#94A3B8] text-sm uppercase tracking-wider mb-2 font-heading">
+              Password
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+              className="input-base"
+              data-testid="guardian-password"
+              required
+            />
+          </div>
           <button
             type="submit"
             disabled={loading}
             className="btn-primary w-full"
             data-testid="guardian-login-btn"
           >
-            {loading ? "Verifying..." : "Enter"}
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
         <p className="text-[#475569] text-xs text-center mt-4">
-          Don't have a Scroll ID?{" "}
+          Don't have an account?{" "}
           <a href="/register" className="text-[#00CCFF] hover:underline">Register here</a>
         </p>
       </div>
