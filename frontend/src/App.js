@@ -1687,7 +1687,7 @@ const MemberGear = () => {
                   {cart.map((item, index) => (
                     <div key={index} className="flex items-center justify-between py-3 border-b border-white/10">
                       <div>
-                        <span className="font-heading uppercase">{merchandise[item.type].name}</span>
+                        <span className="font-heading uppercase">{gear[item.type].name}</span>
                         {item.size && <span className="text-[#94A3B8] ml-2">Size: {item.size}</span>}
                         <span className="text-[#94A3B8] ml-2">× {item.quantity}</span>
                       </div>
