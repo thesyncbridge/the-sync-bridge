@@ -91,6 +91,41 @@ class MissionStatus(BaseModel):
     progress_percent: float
     is_active: bool
 
+# Merchandise Models
+class OrderItem(BaseModel):
+    product_type: str  # hoodie, shirt, hat
+    size: Optional[str] = None  # S, M, L, XL, XXL (not needed for hat)
+    quantity: int = 1
+
+class OrderCreate(BaseModel):
+    scroll_id: str
+    email: EmailStr
+    items: List[OrderItem]
+    shipping_name: str
+    shipping_address: str
+    shipping_city: str
+    shipping_state: str
+    shipping_zip: str
+    shipping_country: str = "USA"
+    notes: Optional[str] = None
+
+class Order(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    scroll_id: str
+    email: str
+    items: List[dict]
+    total_amount: float
+    shipping_name: str
+    shipping_address: str
+    shipping_city: str
+    shipping_state: str
+    shipping_zip: str
+    shipping_country: str
+    notes: Optional[str] = None
+    status: str = "pending"
+    created_at: str
+
 # ============ HELPER FUNCTIONS ============
 
 async def generate_scroll_id() -> str:
