@@ -147,6 +147,23 @@ class Product(BaseModel):
     created_at: str
     is_active: bool = True
 
+# Comment Models
+class CommentCreate(BaseModel):
+    transmission_id: str
+    scroll_id: str
+    content: str
+    parent_id: Optional[str] = None  # For replies
+
+class Comment(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    transmission_id: str
+    scroll_id: str
+    content: str
+    parent_id: Optional[str] = None
+    created_at: str
+    is_deleted: bool = False
+
 # ============ HELPER FUNCTIONS ============
 
 async def generate_scroll_id() -> str:
