@@ -1689,6 +1689,116 @@ const AdminDashboard = () => {
           </div>
         )}
 
+        {/* Products Tab */}
+        {activeTab === "products" && (
+          <div>
+            <button
+              onClick={() => setShowAddProductForm(!showAddProductForm)}
+              className="btn-primary mb-6 flex items-center gap-2"
+              data-testid="add-product-btn"
+            >
+              <Plus size={18} />
+              Add Product
+            </button>
+
+            {showAddProductForm && (
+              <form onSubmit={addProduct} className="card-base p-6 mb-6" data-testid="add-product-form">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <input
+                    type="text"
+                    placeholder="Product ID (e.g., hoodie, mug)"
+                    value={newProduct.product_type}
+                    onChange={(e) => setNewProduct({...newProduct, product_type: e.target.value.toLowerCase().replace(/\s+/g, '_')})}
+                    className="input-base"
+                    required
+                  />
+                  <input
+                    type="text"
+                    placeholder="Product Name"
+                    value={newProduct.name}
+                    onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
+                    className="input-base"
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <input
+                    type="number"
+                    placeholder="Price"
+                    value={newProduct.price}
+                    onChange={(e) => setNewProduct({...newProduct, price: e.target.value})}
+                    className="input-base"
+                    min="0"
+                    step="0.01"
+                    required
+                  />
+                  <select
+                    value={newProduct.image_type}
+                    onChange={(e) => setNewProduct({...newProduct, image_type: e.target.value})}
+                    className="input-base bg-black"
+                  >
+                    <option value="hoodie">Hoodie Preview</option>
+                    <option value="shirt">Shirt Preview</option>
+                    <option value="hat">Hat Preview</option>
+                  </select>
+                </div>
+                <textarea
+                  placeholder="Description"
+                  value={newProduct.description}
+                  onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
+                  className="input-base mb-4 min-h-[80px]"
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Sizes (comma separated, e.g., S, M, L, XL) - leave empty for no sizes"
+                  value={newProduct.sizes}
+                  onChange={(e) => setNewProduct({...newProduct, sizes: e.target.value})}
+                  className="input-base mb-4"
+                />
+                <div className="flex gap-4">
+                  <button type="submit" disabled={loading} className="btn-primary">
+                    {loading ? "Adding..." : "Add Product"}
+                  </button>
+                  <button type="button" onClick={() => setShowAddProductForm(false)} className="text-[#94A3B8]">
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            )}
+
+            <div className="space-y-4">
+              {products.length === 0 ? (
+                <div className="card-base p-8 text-center">
+                  <Shirt className="w-12 h-12 text-[#475569] mx-auto mb-4" />
+                  <p className="text-[#94A3B8] mb-2">No custom products yet.</p>
+                  <p className="text-[#475569] text-sm">Default products (Hoodie, Shirt, Hat) are shown in the store.</p>
+                  <p className="text-[#475569] text-sm">Add custom products to replace or expand the catalog.</p>
+                </div>
+              ) : (
+                products.map((p) => (
+                  <div key={p.id} className="card-base p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 border border-[#00CCFF]/30 flex items-center justify-center">
+                        <Shirt className="w-6 h-6 text-[#00CCFF]" />
+                      </div>
+                      <div>
+                        <h3 className="font-heading uppercase">{p.name}</h3>
+                        <p className="text-[#94A3B8] text-sm">
+                          ${p.price} • {p.product_type} • {p.sizes ? p.sizes.join(", ") : "No sizes"}
+                        </p>
+                      </div>
+                    </div>
+                    <button onClick={() => deleteProduct(p.id)} className="text-[#FF3B30] hover:text-red-400 p-2">
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Orders Tab */}
         {activeTab === "orders" && (
           <div className="space-y-4">
