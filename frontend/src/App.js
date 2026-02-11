@@ -149,6 +149,13 @@ const Navigation = () => {
               Registry
             </NavLink>
             <NavLink
+              to="/store"
+              className="nav-link text-center"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Store
+            </NavLink>
+            <NavLink
               to="/register"
               className="btn-primary text-center mt-2"
               onClick={() => setMobileMenuOpen(false)}
