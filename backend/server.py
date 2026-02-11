@@ -497,6 +497,101 @@ async def update_order_status(order_id: str, status: str, admin: bool = Depends(
         raise HTTPException(status_code=404, detail="Order not found")
     return {"message": "Order status updated", "status": status}
 
+# ============ COMMENTS ============
+
+@api_router.post("/comments", response_model=Comment)
+async def create_comment(comment_data: CommentCreate):
+    """Create a new comment on a transmission"""
+    # Verify guardian exists
+    guardian = await db.guardians.find_one(
+        {"scroll_id": comment_data.scroll_id.upper()},
+        {"_id": 0}
+    )
+    if not guardian:
+        raise HTTPException(status_code=404, detail="Guardian not found. Please register first.")
+    
+    # Verify transmission exists
+    transmission = await db.transmissions.find_one({"id": comment_data.transmission_id})
+    if not transmission:
+        raise HTTPException(status_code=404, detail="Transmission not found")
+    
+    # If it's a reply, verify parent comment exists
+    if comment_data.parent_id:
+        parent = await db.comments.find_one({"id": comment_data.parent_id, "is_deleted": False})
+        if not parent:
+            raise HTTPException(status_code=404, detail="Parent comment not found")
+    
+    comment = Comment(
+        transmission_id=comment_data.transmission_id,
+        scroll_id=comment_data.scroll_id.upper(),
+        content=comment_data.content,
+        parent_id=comment_data.parent_id,
+        created_at=datetime.now(timezone.utc).isoformat(),
+        is_deleted=False
+    )
+    
+    doc = comment.model_dump()
+    await db.comments.insert_one(doc)
+    return comment
+
+@api_router.get("/comments/{transmission_id}")
+async def get_comments(transmission_id: str):
+    """Get all comments for a transmission"""
+    comments = await db.comments.find(
+        {"transmission_id": transmission_id, "is_deleted": False},
+        {"_id": 0}
+    ).sort("created_at", 1).to_list(500)
+    return comments
+
+@api_router.delete("/comments/{comment_id}")
+async def delete_comment(comment_id: str, scroll_id: Optional[str] = None, admin: bool = Depends(verify_admin)):
+    """Delete a comment (Admin only via auth, or owner via scroll_id)"""
+    # Admin can delete any comment
+    result = await db.comments.update_one(
+        {"id": comment_id},
+        {"$set": {"is_deleted": True}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    return {"message": "Comment deleted"}
+
+@api_router.delete("/comments/{comment_id}/user")
+async def delete_own_comment(comment_id: str, scroll_id: str):
+    """Delete own comment (for guardians)"""
+    comment = await db.comments.find_one({"id": comment_id, "is_deleted": False})
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    if comment["scroll_id"] != scroll_id.upper():
+        raise HTTPException(status_code=403, detail="You can only delete your own comments")
+    
+    await db.comments.update_one(
+        {"id": comment_id},
+        {"$set": {"is_deleted": True}}
+    )
+    return {"message": "Comment deleted"}
+
+@api_router.post("/comments/admin", response_model=Comment)
+async def admin_create_comment(comment_data: CommentCreate, admin: bool = Depends(verify_admin)):
+    """Admin can post comments as any guardian or as 'ADMIN'"""
+    comment = Comment(
+        transmission_id=comment_data.transmission_id,
+        scroll_id=comment_data.scroll_id.upper() if comment_data.scroll_id else "ADMIN",
+        content=comment_data.content,
+        parent_id=comment_data.parent_id,
+        created_at=datetime.now(timezone.utc).isoformat(),
+        is_deleted=False
+    )
+    
+    doc = comment.model_dump()
+    await db.comments.insert_one(doc)
+    return comment
+
+@api_router.get("/comments/all/admin")
+async def get_all_comments(admin: bool = Depends(verify_admin)):
+    """Get all comments for admin moderation"""
+    comments = await db.comments.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return comments
+
 # Include the router in the main app
 app.include_router(api_router)
 
