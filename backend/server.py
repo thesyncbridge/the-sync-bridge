@@ -268,8 +268,8 @@ async def get_certificate(scroll_id: str):
 # ============ TRANSMISSIONS ============
 
 @api_router.post("/transmissions", response_model=Transmission)
-async def create_transmission(transmission_data: TransmissionCreate):
-    """Create a new transmission"""
+async def create_transmission(transmission_data: TransmissionCreate, admin: bool = Depends(verify_admin)):
+    """Create a new transmission (Admin only)"""
     transmission = Transmission(
         title=transmission_data.title,
         description=transmission_data.description,
@@ -301,6 +301,118 @@ async def get_latest_transmission():
     if not transmission:
         return None
     return Transmission(**transmission)
+
+@api_router.delete("/transmissions/{transmission_id}")
+async def delete_transmission(transmission_id: str, admin: bool = Depends(verify_admin)):
+    """Delete a transmission (Admin only)"""
+    result = await db.transmissions.delete_one({"id": transmission_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Transmission not found")
+    return {"message": "Transmission deleted successfully"}
+
+# ============ ADMIN AUTH ============
+
+@api_router.post("/admin/login")
+async def admin_login(credentials: HTTPBasicCredentials = Depends(security)):
+    """Verify admin credentials"""
+    if secrets.compare_digest(credentials.password, ADMIN_PASSWORD):
+        return {"message": "Login successful", "authenticated": True}
+    raise HTTPException(status_code=401, detail="Invalid credentials")
+
+# ============ MERCHANDISE ============
+
+@api_router.get("/merchandise")
+async def get_merchandise():
+    """Get all available merchandise"""
+    return MERCHANDISE
+
+@api_router.get("/merchandise/{product_type}")
+async def get_merchandise_item(product_type: str):
+    """Get specific merchandise item"""
+    if product_type not in MERCHANDISE:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return {product_type: MERCHANDISE[product_type]}
+
+# ============ ORDERS ============
+
+@api_router.post("/orders", response_model=Order)
+async def create_order(order_data: OrderCreate):
+    """Create a new merchandise order"""
+    # Verify guardian exists
+    guardian = await db.guardians.find_one(
+        {"scroll_id": order_data.scroll_id.upper()},
+        {"_id": 0}
+    )
+    if not guardian:
+        raise HTTPException(status_code=404, detail="Guardian not found. Please register first.")
+    
+    # Calculate total
+    total = 0.0
+    items_with_details = []
+    for item in order_data.items:
+        if item.product_type not in MERCHANDISE:
+            raise HTTPException(status_code=400, detail=f"Invalid product: {item.product_type}")
+        product = MERCHANDISE[item.product_type]
+        item_total = product["price"] * item.quantity
+        total += item_total
+        items_with_details.append({
+            "product_type": item.product_type,
+            "product_name": product["name"],
+            "size": item.size,
+            "quantity": item.quantity,
+            "price": product["price"],
+            "item_total": item_total
+        })
+    
+    order = Order(
+        scroll_id=order_data.scroll_id.upper(),
+        email=order_data.email,
+        items=items_with_details,
+        total_amount=total,
+        shipping_name=order_data.shipping_name,
+        shipping_address=order_data.shipping_address,
+        shipping_city=order_data.shipping_city,
+        shipping_state=order_data.shipping_state,
+        shipping_zip=order_data.shipping_zip,
+        shipping_country=order_data.shipping_country,
+        notes=order_data.notes,
+        status="pending",
+        created_at=datetime.now(timezone.utc).isoformat()
+    )
+    
+    doc = order.model_dump()
+    await db.orders.insert_one(doc)
+    
+    return order
+
+@api_router.get("/orders", response_model=List[Order])
+async def get_orders(admin: bool = Depends(verify_admin)):
+    """Get all orders (Admin only)"""
+    orders = await db.orders.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return [Order(**o) for o in orders]
+
+@api_router.get("/orders/{order_id}")
+async def get_order(order_id: str):
+    """Get specific order"""
+    order = await db.orders.find_one({"id": order_id}, {"_id": 0})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    return Order(**order)
+
+@api_router.patch("/orders/{order_id}/status")
+async def update_order_status(order_id: str, status: str, admin: bool = Depends(verify_admin)):
+    """Update order status (Admin only)"""
+    valid_statuses = ["pending", "processing", "shipped", "delivered", "cancelled"]
+    if status not in valid_statuses:
+        raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
+    
+    result = await db.orders.update_one(
+        {"id": order_id},
+        {"$set": {"status": status}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Order not found")
+    return {"message": "Order status updated", "status": status}
 
 # Include the router in the main app
 app.include_router(api_router)
