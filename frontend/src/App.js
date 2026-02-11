@@ -1567,10 +1567,10 @@ const MemberGear = () => {
         <div className="text-center mb-12 fade-in-up">
           <ShoppingBag className="w-10 h-10 text-[#00CCFF] mx-auto mb-4" />
           <h1 className="font-heading font-bold text-3xl md:text-4xl mb-4 uppercase tracking-wide">
-            Guardian <span className="text-[#00CCFF]">Vault</span>
+            Member <span className="text-[#00CCFF]">Gear</span>
           </h1>
           <p className="text-[#94A3B8] max-w-xl mx-auto">
-            Official merchandise personalized with your Scroll ID. Wear your guardian identity.
+            Official gear personalized with your Scroll ID. Wear your guardian identity.
           </p>
         </div>
 
@@ -1581,7 +1581,7 @@ const MemberGear = () => {
               Enter Your Scroll ID
             </h2>
             <p className="text-[#94A3B8] text-sm text-center mb-6">
-              Your Scroll ID will be printed on your merchandise
+              Your Scroll ID will be printed on your gear
             </p>
             <div className="flex gap-3">
               <input
