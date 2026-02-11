@@ -1746,6 +1746,7 @@ const AdminDashboard = () => {
   const [transmissions, setTransmissions] = useState([]);
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
+  const [comments, setComments] = useState([]);
   const [activeTab, setActiveTab] = useState("transmissions");
   const [showAddForm, setShowAddForm] = useState(false);
   const [showAddProductForm, setShowAddProductForm] = useState(false);
@@ -1763,6 +1764,7 @@ const AdminDashboard = () => {
     sizes: "",
     image_type: "hoodie"
   });
+  const [newAdminComment, setNewAdminComment] = useState({ transmission_id: "", content: "" });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -1778,16 +1780,20 @@ const AdminDashboard = () => {
 
   const fetchData = async () => {
     try {
-      const [transRes, ordersRes, productsRes] = await Promise.all([
+      const [transRes, ordersRes, productsRes, commentsRes] = await Promise.all([
         axios.get(`${API}/transmissions`),
         axios.get(`${API}/orders`, {
           headers: { Authorization: `Basic ${authHeader}` }
         }),
-        axios.get(`${API}/merchandise/list`).catch(() => ({ data: [] }))
+        axios.get(`${API}/merchandise/list`).catch(() => ({ data: [] })),
+        axios.get(`${API}/comments/all/admin`, {
+          headers: { Authorization: `Basic ${authHeader}` }
+        }).catch(() => ({ data: [] }))
       ]);
       setTransmissions(transRes.data);
       setOrders(ordersRes.data);
       setProducts(productsRes.data || []);
+      setComments(commentsRes.data || []);
     } catch (error) {
       if (error.response?.status === 401) {
         sessionStorage.removeItem("adminAuth");
