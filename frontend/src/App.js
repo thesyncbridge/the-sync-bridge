@@ -1425,13 +1425,23 @@ const AdminLogin = () => {
 const AdminDashboard = () => {
   const [transmissions, setTransmissions] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [products, setProducts] = useState([]);
   const [activeTab, setActiveTab] = useState("transmissions");
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showAddProductForm, setShowAddProductForm] = useState(false);
   const [newTransmission, setNewTransmission] = useState({
     title: "",
     description: "",
     video_url: "",
     day_number: 1
+  });
+  const [newProduct, setNewProduct] = useState({
+    product_type: "",
+    name: "",
+    price: 0,
+    description: "",
+    sizes: "",
+    image_type: "hoodie"
   });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -1448,14 +1458,16 @@ const AdminDashboard = () => {
 
   const fetchData = async () => {
     try {
-      const [transRes, ordersRes] = await Promise.all([
+      const [transRes, ordersRes, productsRes] = await Promise.all([
         axios.get(`${API}/transmissions`),
         axios.get(`${API}/orders`, {
           headers: { Authorization: `Basic ${authHeader}` }
-        })
+        }),
+        axios.get(`${API}/merchandise/list`).catch(() => ({ data: [] }))
       ]);
       setTransmissions(transRes.data);
       setOrders(ordersRes.data);
+      setProducts(productsRes.data || []);
     } catch (error) {
       if (error.response?.status === 401) {
         sessionStorage.removeItem("adminAuth");
@@ -1495,6 +1507,42 @@ const AdminDashboard = () => {
     }
   };
 
+  const addProduct = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const productData = {
+        ...newProduct,
+        sizes: newProduct.sizes ? newProduct.sizes.split(",").map(s => s.trim()).filter(s => s) : null,
+        price: parseFloat(newProduct.price)
+      };
+      await axios.post(`${API}/merchandise`, productData, {
+        headers: { Authorization: `Basic ${authHeader}` }
+      });
+      toast.success("Product added");
+      setNewProduct({ product_type: "", name: "", price: 0, description: "", sizes: "", image_type: "hoodie" });
+      setShowAddProductForm(false);
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Failed to add product");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteProduct = async (id) => {
+    if (!window.confirm("Delete this product?")) return;
+    try {
+      await axios.delete(`${API}/merchandise/${id}`, {
+        headers: { Authorization: `Basic ${authHeader}` }
+      });
+      toast.success("Product deleted");
+      fetchData();
+    } catch (error) {
+      toast.error("Failed to delete");
+    }
+  };
+
   const updateOrderStatus = async (orderId, status) => {
     try {
       await axios.patch(`${API}/orders/${orderId}/status?status=${status}`, {}, {
@@ -1526,18 +1574,26 @@ const AdminDashboard = () => {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-4 mb-8 border-b border-white/10">
+        <div className="flex gap-4 mb-8 border-b border-white/10 overflow-x-auto">
           <button
             onClick={() => setActiveTab("transmissions")}
-            className={`pb-3 px-4 font-heading uppercase tracking-wider text-sm transition-colors ${
+            className={`pb-3 px-4 font-heading uppercase tracking-wider text-sm transition-colors whitespace-nowrap ${
               activeTab === "transmissions" ? "text-[#00CCFF] border-b-2 border-[#00CCFF]" : "text-[#94A3B8]"
             }`}
           >
             Transmissions ({transmissions.length})
           </button>
           <button
+            onClick={() => setActiveTab("products")}
+            className={`pb-3 px-4 font-heading uppercase tracking-wider text-sm transition-colors whitespace-nowrap ${
+              activeTab === "products" ? "text-[#00CCFF] border-b-2 border-[#00CCFF]" : "text-[#94A3B8]"
+            }`}
+          >
+            Products ({products.length})
+          </button>
+          <button
             onClick={() => setActiveTab("orders")}
-            className={`pb-3 px-4 font-heading uppercase tracking-wider text-sm transition-colors ${
+            className={`pb-3 px-4 font-heading uppercase tracking-wider text-sm transition-colors whitespace-nowrap ${
               activeTab === "orders" ? "text-[#00CCFF] border-b-2 border-[#00CCFF]" : "text-[#94A3B8]"
             }`}
           >
