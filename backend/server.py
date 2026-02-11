@@ -446,8 +446,16 @@ async def create_order(order_data: OrderCreate):
         # Use default products if none in DB
         merchandise = DEFAULT_MERCHANDISE
     else:
-        # Convert to dict format
-        merchandise = {p["product_type"]: p for p in products}
+        # Convert to dict format and merge with defaults
+        db_products = {p["product_type"]: p for p in products}
+        
+        # Ensure all default products are available
+        merchandise = {}
+        for product_type, default_product in DEFAULT_MERCHANDISE.items():
+            if product_type in db_products:
+                merchandise[product_type] = db_products[product_type]
+            else:
+                merchandise[product_type] = default_product
     
     # Calculate total
     total = 0.0
