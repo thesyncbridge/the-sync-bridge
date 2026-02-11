@@ -366,8 +366,19 @@ async def get_merchandise():
     if not products:
         # Return default products if none in DB
         return DEFAULT_MERCHANDISE
-    # Convert to dict format
-    return {p["product_type"]: p for p in products}
+    
+    # Convert to dict format and merge with defaults
+    db_products = {p["product_type"]: p for p in products}
+    
+    # Ensure all default products are available
+    result = {}
+    for product_type, default_product in DEFAULT_MERCHANDISE.items():
+        if product_type in db_products:
+            result[product_type] = db_products[product_type]
+        else:
+            result[product_type] = default_product
+    
+    return result
 
 @api_router.get("/merchandise/list")
 async def get_merchandise_list():
