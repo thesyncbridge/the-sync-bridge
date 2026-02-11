@@ -1869,6 +1869,44 @@ const AdminDashboard = () => {
     }
   };
 
+  const deleteComment = async (id) => {
+    if (!window.confirm("Delete this comment?")) return;
+    try {
+      await axios.delete(`${API}/comments/${id}`, {
+        headers: { Authorization: `Basic ${authHeader}` }
+      });
+      toast.success("Comment deleted");
+      fetchData();
+    } catch (error) {
+      toast.error("Failed to delete");
+    }
+  };
+
+  const addAdminComment = async () => {
+    if (!newAdminComment.transmission_id || !newAdminComment.content) {
+      toast.error("Select a transmission and enter content");
+      return;
+    }
+    setLoading(true);
+    try {
+      await axios.post(`${API}/comments/admin`, {
+        transmission_id: newAdminComment.transmission_id,
+        scroll_id: "ADMIN",
+        content: newAdminComment.content,
+        parent_id: null
+      }, {
+        headers: { Authorization: `Basic ${authHeader}` }
+      });
+      toast.success("Comment added");
+      setNewAdminComment({ transmission_id: "", content: "" });
+      fetchData();
+    } catch (error) {
+      toast.error("Failed to add comment");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const updateOrderStatus = async (orderId, status) => {
     try {
       await axios.patch(`${API}/orders/${orderId}/status?status=${status}`, {}, {
