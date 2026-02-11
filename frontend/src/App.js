@@ -1692,10 +1692,16 @@ const Footer = () => (
             Join Registry
           </NavLink>
           <NavLink
-            to="/transmissions"
+            to="/store"
             className="text-[#94A3B8] hover:text-[#00CCFF] text-sm transition-colors"
           >
-            Transmissions
+            Store
+          </NavLink>
+          <NavLink
+            to="/admin"
+            className="text-[#475569] hover:text-[#00CCFF] text-sm transition-colors"
+          >
+            Admin
           </NavLink>
         </div>
       </div>
