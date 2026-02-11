@@ -542,6 +542,37 @@ async def delete_order(order_id: str, admin: bool = Depends(verify_admin)):
         raise HTTPException(status_code=404, detail="Order not found")
     return {"message": "Order deleted successfully"}
 
+# ============ FILE UPLOADS ============
+
+@api_router.post("/upload/image")
+async def upload_image(file: UploadFile = File(...), admin: bool = Depends(verify_admin)):
+    """Upload an image file (Admin only)"""
+    # Validate file type
+    allowed_types = ["image/jpeg", "image/png", "image/gif", "image/webp"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail="Invalid file type. Allowed: JPEG, PNG, GIF, WEBP")
+    
+    # Validate file size (max 5MB)
+    contents = await file.read()
+    if len(contents) > 5 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File too large. Maximum size: 5MB")
+    
+    # Generate unique filename
+    ext = file.filename.split(".")[-1] if "." in file.filename else "jpg"
+    filename = f"{uuid.uuid4()}.{ext}"
+    filepath = UPLOAD_DIR / filename
+    
+    # Save file
+    with open(filepath, "wb") as f:
+        f.write(contents)
+    
+    # Return the URL path
+    return {
+        "filename": filename,
+        "url": f"/uploads/{filename}",
+        "size": len(contents)
+    }
+
 # ============ COMMENTS ============
 
 @api_router.post("/comments", response_model=Comment)
