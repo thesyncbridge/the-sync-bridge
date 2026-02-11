@@ -871,10 +871,45 @@ const Transmissions = () => {
 const TransmissionCard = ({ transmission, index }) => {
   const { guardian } = useGuardian();
   const [showComments, setShowComments] = useState(false);
+  const [showVideo, setShowVideo] = useState(false);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [replyTo, setReplyTo] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // Convert video URL to embed URL
+  const getEmbedUrl = (url) => {
+    if (!url) return null;
+    
+    // YouTube
+    const youtubeMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    if (youtubeMatch) {
+      return `https://www.youtube.com/embed/${youtubeMatch[1]}?autoplay=1`;
+    }
+    
+    // Vimeo
+    const vimeoMatch = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+    if (vimeoMatch) {
+      return `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=1`;
+    }
+    
+    // Loom
+    const loomMatch = url.match(/loom\.com\/share\/([a-zA-Z0-9]+)/);
+    if (loomMatch) {
+      return `https://www.loom.com/embed/${loomMatch[1]}?autoplay=1`;
+    }
+    
+    // Direct video file or other embed
+    if (url.match(/\.(mp4|webm|ogg)$/i)) {
+      return url;
+    }
+    
+    // Return original URL for iframe attempt
+    return url;
+  };
+
+  const embedUrl = getEmbedUrl(transmission.video_url);
+  const isDirectVideo = transmission.video_url?.match(/\.(mp4|webm|ogg)$/i);
 
   const fetchComments = async () => {
     try {
@@ -928,26 +963,82 @@ const TransmissionCard = ({ transmission, index }) => {
   const getReplies = (parentId) => comments.filter(c => c.parent_id === parentId);
 
   return (
-    <div
-      className="transmission-card p-6 fade-in-up"
-      style={{ animationDelay: `${index * 0.1}s` }}
-      data-testid={`transmission-${transmission.day_number}`}
-    >
-      <div className="flex items-start gap-4 md:gap-6">
-        {/* Day Number */}
-        <div className="flex-shrink-0 w-16 h-16 md:w-20 md:h-20 border border-[#00CCFF]/30 flex flex-col items-center justify-center">
-          <span className="font-mono text-xs text-[#475569] uppercase">Day</span>
-          <span className="font-mono text-xl md:text-2xl text-[#00CCFF]">
-            {transmission.day_number}
-          </span>
+    <>
+      {/* Video Modal */}
+      {showVideo && transmission.video_url && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+          onClick={() => setShowVideo(false)}
+        >
+          <div 
+            className="relative w-full max-w-4xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => setShowVideo(false)}
+              className="absolute -top-12 right-0 text-white hover:text-[#00CCFF] transition-colors flex items-center gap-2"
+            >
+              <span className="text-sm">Close</span>
+              <X size={24} />
+            </button>
+            
+            {/* Video Title */}
+            <div className="mb-4">
+              <span className="font-mono text-[#00CCFF] text-sm">DAY {transmission.day_number}</span>
+              <h3 className="font-heading font-bold text-xl uppercase tracking-wide text-white">
+                {transmission.title}
+              </h3>
+            </div>
+            
+            {/* Video Player */}
+            <div className="relative w-full aspect-video bg-black border border-[#00CCFF]/30">
+              {isDirectVideo ? (
+                <video
+                  src={transmission.video_url}
+                  controls
+                  autoPlay
+                  className="w-full h-full"
+                >
+                  Your browser does not support video playback.
+                </video>
+              ) : (
+                <iframe
+                  src={embedUrl}
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title={transmission.title}
+                />
+              )}
+            </div>
+            
+            {/* Description */}
+            <p className="mt-4 text-[#94A3B8] text-sm">{transmission.description}</p>
+          </div>
         </div>
+      )}
 
-        {/* Content */}
-        <div className="flex-grow">
-          <h3 className="font-heading font-semibold text-lg md:text-xl uppercase tracking-wide mb-2">
-            {transmission.title}
-          </h3>
-          <p className="text-[#94A3B8] text-sm leading-relaxed mb-4">
+      <div
+        className="transmission-card p-6 fade-in-up"
+        style={{ animationDelay: `${index * 0.1}s` }}
+        data-testid={`transmission-${transmission.day_number}`}
+      >
+        <div className="flex items-start gap-4 md:gap-6">
+          {/* Day Number */}
+          <div className="flex-shrink-0 w-16 h-16 md:w-20 md:h-20 border border-[#00CCFF]/30 flex flex-col items-center justify-center">
+            <span className="font-mono text-xs text-[#475569] uppercase">Day</span>
+            <span className="font-mono text-xl md:text-2xl text-[#00CCFF]">
+              {transmission.day_number}
+            </span>
+          </div>
+
+          {/* Content */}
+          <div className="flex-grow">
+            <h3 className="font-heading font-semibold text-lg md:text-xl uppercase tracking-wide mb-2">
+              {transmission.title}
+            </h3>
+            <p className="text-[#94A3B8] text-sm leading-relaxed mb-4">
             {transmission.description}
           </p>
 
