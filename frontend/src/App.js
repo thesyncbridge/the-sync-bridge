@@ -2649,7 +2649,7 @@ function App() {
             <Route path="/certificate/:scrollId" element={<Certificate />} />
             <Route path="/transmissions" element={<Transmissions />} />
             <Route path="/registry" element={<Registry />} />
-            <Route path="/store" element={<Store />} />
+            <Route path="/store" element={<MemberGear />} />
             <Route path="/admin" element={<AdminLogin />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
           </Routes>
