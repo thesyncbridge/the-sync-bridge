@@ -8,6 +8,36 @@ import { Triangle, Hexagon, Activity, Zap, Globe, ChevronRight, Clock, Users, Aw
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Guardian Context for login state
+import { createContext, useContext } from "react";
+
+const GuardianContext = createContext(null);
+
+const useGuardian = () => useContext(GuardianContext);
+
+const GuardianProvider = ({ children }) => {
+  const [guardian, setGuardian] = useState(() => {
+    const saved = sessionStorage.getItem("guardian");
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  const login = (guardianData) => {
+    sessionStorage.setItem("guardian", JSON.stringify(guardianData));
+    setGuardian(guardianData);
+  };
+
+  const logout = () => {
+    sessionStorage.removeItem("guardian");
+    setGuardian(null);
+  };
+
+  return (
+    <GuardianContext.Provider value={{ guardian, login, logout }}>
+      {children}
+    </GuardianContext.Provider>
+  );
+};
+
 // Sacred Geometry Logo Component
 const SyncBridgeLogo = ({ size = 80, className = "" }) => (
   <svg
