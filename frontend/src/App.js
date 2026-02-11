@@ -1418,25 +1418,25 @@ const MerchPreview = ({ type, scrollId }) => {
   );
 };
 
-// Store Page
-const Store = () => {
+// Member Gear Page
+const MemberGear = () => {
   const [scrollId, setScrollId] = useState("");
   const [verifiedGuardian, setVerifiedGuardian] = useState(null);
   const [cart, setCart] = useState([]);
   const [showCheckout, setShowCheckout] = useState(false);
   const [loading, setLoading] = useState(false);
   const [orderComplete, setOrderComplete] = useState(null);
-  const [merchandise, setMerchandise] = useState({});
+  const [gear, setGear] = useState({});
   const navigate = useNavigate();
   
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const response = await axios.get(`${API}/merchandise`);
-        setMerchandise(response.data);
+        setGear(response.data);
       } catch (error) {
         // Fallback to defaults
-        setMerchandise({
+        setGear({
           hoodie: { name: "Guardian Hoodie", price: 65.00, description: "Premium black hoodie with sacred geometry logo and your personalized Scroll ID", sizes: ["S", "M", "L", "XL", "XXL"], image_type: "hoodie" },
           shirt: { name: "Guardian T-Shirt", price: 35.00, description: "Classic black t-shirt with sacred geometry logo and your personalized Scroll ID", sizes: ["S", "M", "L", "XL", "XXL"], image_type: "shirt" },
           hat: { name: "Guardian Cap", price: 30.00, description: "Black fitted cap with sacred geometry logo and your personalized Scroll ID", sizes: null, image_type: "hat" }
@@ -1473,9 +1473,9 @@ const Store = () => {
           : item
       ));
     } else {
-      setCart([...cart, { type, size, quantity: 1, price: merchandise[type].price }]);
+      setCart([...cart, { type, size, quantity: 1, price: gear[type].price }]);
     }
-    toast.success(`Added ${merchandise[type].name} to cart`);
+    toast.success(`Added ${gear[type].name} to cart`);
   };
 
   const removeFromCart = (index) => {
