@@ -129,7 +129,7 @@ const Navigation = () => {
             Registry
           </NavLink>
           <NavLink to="/store" className="nav-link" data-testid="nav-store">
-            Store
+            Member Gear
           </NavLink>
         </div>
         {guardian ? (
@@ -194,7 +194,7 @@ const Navigation = () => {
               className="nav-link text-center"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Store
+              Member Gear
             </NavLink>
             {guardian ? (
               <div className="text-center pt-2 border-t border-white/10">
@@ -2609,7 +2609,7 @@ const Footer = () => (
             to="/store"
             className="text-[#94A3B8] hover:text-[#00CCFF] text-sm transition-colors"
           >
-            Store
+            Member Gear
           </NavLink>
           <NavLink
             to="/admin"
