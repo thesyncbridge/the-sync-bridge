@@ -40,11 +40,11 @@ def verify_admin(credentials: HTTPBasicCredentials = Depends(security)):
 MISSION_START_DATE = date(2026, 2, 22)
 MISSION_TOTAL_DAYS = 325
 
-# Merchandise Configuration
-MERCHANDISE = {
-    "hoodie": {"name": "Guardian Hoodie", "price": 65.00, "description": "Premium black hoodie with sacred geometry logo and your personalized Scroll ID"},
-    "shirt": {"name": "Guardian T-Shirt", "price": 35.00, "description": "Classic black t-shirt with sacred geometry logo and your personalized Scroll ID"},
-    "hat": {"name": "Guardian Cap", "price": 30.00, "description": "Black fitted cap with sacred geometry logo and your personalized Scroll ID"}
+# Merchandise Configuration (Default products - can be overridden by DB)
+DEFAULT_MERCHANDISE = {
+    "hoodie": {"name": "Guardian Hoodie", "price": 65.00, "description": "Premium black hoodie with sacred geometry logo and your personalized Scroll ID", "sizes": ["S", "M", "L", "XL", "XXL"]},
+    "shirt": {"name": "Guardian T-Shirt", "price": 35.00, "description": "Classic black t-shirt with sacred geometry logo and your personalized Scroll ID", "sizes": ["S", "M", "L", "XL", "XXL"]},
+    "hat": {"name": "Guardian Cap", "price": 30.00, "description": "Black fitted cap with sacred geometry logo and your personalized Scroll ID", "sizes": None}
 }
 
 # ============ MODELS ============
