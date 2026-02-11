@@ -337,6 +337,152 @@ class TheSyncBridgeAPITester:
             print(f"❌ Failed - Error: {str(e)}")
             return False, None
 
+    def test_create_comment(self, transmission_id, scroll_id):
+        """Test creating a comment on a transmission"""
+        data = {
+            "transmission_id": transmission_id,
+            "scroll_id": scroll_id,
+            "content": "This is a test comment from the API test suite",
+            "parent_id": None
+        }
+        
+        success, response = self.run_test(
+            "Create Comment",
+            "POST",
+            "comments",
+            200,
+            data=data
+        )
+        if success:
+            print(f"   Comment ID: {response.get('id')}")
+            print(f"   Content: {response.get('content')}")
+            return True, response
+        return False, None
+
+    def test_get_comments(self, transmission_id):
+        """Test getting comments for a transmission"""
+        success, response = self.run_test(
+            "Get Comments",
+            "GET",
+            f"comments/{transmission_id}",
+            200
+        )
+        if success:
+            print(f"   Comments found: {len(response)}")
+        return success, response
+
+    def test_create_reply(self, transmission_id, scroll_id, parent_comment_id):
+        """Test creating a reply to a comment"""
+        data = {
+            "transmission_id": transmission_id,
+            "scroll_id": scroll_id,
+            "content": "This is a test reply to the comment",
+            "parent_id": parent_comment_id
+        }
+        
+        success, response = self.run_test(
+            "Create Reply",
+            "POST",
+            "comments",
+            200,
+            data=data
+        )
+        if success:
+            print(f"   Reply ID: {response.get('id')}")
+            print(f"   Parent ID: {response.get('parent_id')}")
+            return True, response
+        return False, None
+
+    def test_delete_own_comment(self, comment_id, scroll_id):
+        """Test deleting own comment (guardian)"""
+        success, response = self.run_test(
+            "Delete Own Comment",
+            "DELETE",
+            f"comments/{comment_id}/user",
+            200,
+            params={"scroll_id": scroll_id}
+        )
+        return success
+
+    def test_admin_create_comment(self, auth_string, transmission_id):
+        """Test admin creating comment as ADMIN"""
+        headers = {'Authorization': f'Basic {auth_string}', 'Content-Type': 'application/json'}
+        data = {
+            "transmission_id": transmission_id,
+            "scroll_id": "ADMIN",
+            "content": "This is an admin comment for testing",
+            "parent_id": None
+        }
+        
+        url = f"{self.api_url}/comments/admin"
+        self.tests_run += 1
+        print(f"\n🔍 Testing Admin Create Comment...")
+        
+        try:
+            response = requests.post(url, json=data, headers=headers)
+            success = response.status_code == 200
+            
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                response_data = response.json()
+                print(f"   Admin comment ID: {response_data.get('id')}")
+                return True, response_data
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                return False, None
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False, None
+
+    def test_admin_delete_comment(self, auth_string, comment_id):
+        """Test admin deleting any comment"""
+        headers = {'Authorization': f'Basic {auth_string}', 'Content-Type': 'application/json'}
+        
+        url = f"{self.api_url}/comments/{comment_id}"
+        self.tests_run += 1
+        print(f"\n🔍 Testing Admin Delete Comment...")
+        
+        try:
+            response = requests.delete(url, headers=headers)
+            success = response.status_code == 200
+            
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                return True
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                return False
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False
+
+    def test_get_all_comments_admin(self, auth_string):
+        """Test admin getting all comments"""
+        headers = {'Authorization': f'Basic {auth_string}', 'Content-Type': 'application/json'}
+        
+        url = f"{self.api_url}/comments/all/admin"
+        self.tests_run += 1
+        print(f"\n🔍 Testing Get All Comments (Admin)...")
+        
+        try:
+            response = requests.get(url, headers=headers)
+            success = response.status_code == 200
+            
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                comments = response.json()
+                print(f"   Total comments found: {len(comments)}")
+                return True, comments
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                return False, None
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False, None
+
 def main():
     print("🚀 Starting TheSyncBridge API Tests")
     print("=" * 50)
