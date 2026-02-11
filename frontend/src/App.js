@@ -2142,6 +2142,19 @@ const AdminDashboard = () => {
                   onChange={(e) => setNewProduct({...newProduct, sizes: e.target.value})}
                   className="input-base mb-4"
                 />
+                <input
+                  type="url"
+                  placeholder="Product Image URL (optional - paste link to image)"
+                  value={newProduct.image_url}
+                  onChange={(e) => setNewProduct({...newProduct, image_url: e.target.value})}
+                  className="input-base mb-4"
+                />
+                {newProduct.image_url && (
+                  <div className="mb-4 p-2 border border-white/10">
+                    <p className="text-[#475569] text-xs mb-2">Image Preview:</p>
+                    <img src={newProduct.image_url} alt="Preview" className="max-h-32 object-contain" onError={(e) => e.target.style.display='none'} />
+                  </div>
+                )}
                 <div className="flex gap-4">
                   <button type="submit" disabled={loading} className="btn-primary">
                     {loading ? "Adding..." : "Add Product"}
