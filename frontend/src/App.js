@@ -1621,7 +1621,7 @@ const MemberGear = () => {
 
             {/* Products Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-              {Object.entries(merchandise).map(([type, product]) => (
+              {Object.entries(gear).map(([type, product]) => (
                 <div key={type} className="card-base p-6 fade-in-up" data-testid={`product-${type}`}>
                   {/* Product Image - Custom URL or Generated Preview */}
                   {product.image_url ? (
