@@ -1963,6 +1963,14 @@ const AdminDashboard = () => {
           >
             Orders ({orders.length})
           </button>
+          <button
+            onClick={() => setActiveTab("comments")}
+            className={`pb-3 px-4 font-heading uppercase tracking-wider text-sm transition-colors whitespace-nowrap ${
+              activeTab === "comments" ? "text-[#00CCFF] border-b-2 border-[#00CCFF]" : "text-[#94A3B8]"
+            }`}
+          >
+            Comments ({comments.filter(c => !c.is_deleted).length})
+          </button>
         </div>
 
         {/* Transmissions Tab */}
