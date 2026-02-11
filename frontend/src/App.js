@@ -61,6 +61,7 @@ const SyncBridgeLogo = ({ size = 80, className = "" }) => (
 // Navigation Component
 const Navigation = () => {
   const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -78,7 +79,7 @@ const Navigation = () => {
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
         <NavLink to="/" className="flex items-center gap-3">
           <SyncBridgeLogo size={40} />
-          <span className="font-heading font-bold text-xl tracking-wider text-white">
+          <span className="font-heading font-bold text-xl tracking-wider text-white hidden sm:block">
             THESYNCBRIDGE
           </span>
         </NavLink>
@@ -103,7 +104,57 @@ const Navigation = () => {
         >
           Become Guardian
         </NavLink>
+        {/* Mobile Menu Button */}
+        <button
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="md:hidden p-2 text-[#00CCFF]"
+          data-testid="mobile-menu-toggle"
+        >
+          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
       </div>
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden glass mt-2 mx-4 p-4 fade-in-up" data-testid="mobile-menu">
+          <div className="flex flex-col gap-4">
+            <NavLink
+              to="/"
+              className="nav-link text-center"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Mission
+            </NavLink>
+            <NavLink
+              to="/register"
+              className="nav-link text-center"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Join
+            </NavLink>
+            <NavLink
+              to="/transmissions"
+              className="nav-link text-center"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Transmissions
+            </NavLink>
+            <NavLink
+              to="/registry"
+              className="nav-link text-center"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Registry
+            </NavLink>
+            <NavLink
+              to="/register"
+              className="btn-primary text-center mt-2"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Become Guardian
+            </NavLink>
+          </div>
+        </div>
+      )}
     </nav>
   );
 };
