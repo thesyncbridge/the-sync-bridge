@@ -7,73 +7,89 @@ Build "TheSyncBridge" - A 325-day mission platform bridging Plasma Physics and S
 - Mission Clock tracking the 325-day journey
 - Daily Transmissions content section
 - Guardian Registry
+- Admin panel for transmission management
+- Merchandise store with personalized items
 
 ## User Choices
 - Simple email-only registration (no password)
 - Mission start date: February 22, 2026
-- Placeholder transmissions with link capability
-- Recreate logo/visual style with Neon Noir theme (Matte Black + Electric Blue #00CCFF)
+- Video transmissions via links (YouTube/Vimeo URLs)
+- Order request system (no payment processing - manual fulfillment)
+- Simple password-protected admin panel
 
 ## User Personas
-1. **Blue Guardians** - Community members who register to receive a Scroll ID and participate in the 325-day mission
-2. **Admin/Translator** - Content creator who posts daily transmissions
-
-## Core Requirements (Static)
-- Scroll ID generation format: SB-XXXX (sequential)
-- Certificate of Guardianship display
-- Mission Clock: Day X/325 countdown from Feb 22, 2026
-- Guardian Registry listing all members
-- Transmissions feed with video link placeholders
+1. **Blue Guardians** - Community members who register, receive Scroll IDs, and purchase merchandise
+2. **Admin/Translator** - Content creator who manages transmissions and orders
 
 ## What's Been Implemented - February 11, 2026
 
 ### Backend (FastAPI + MongoDB)
-- `/api/mission/status` - Returns current day, progress, dates
+**Guardian System:**
 - `/api/guardians/register` - Email registration, generates Scroll ID
 - `/api/guardians/lookup` - Find guardian by email
 - `/api/guardians/registry` - List all guardians
-- `/api/guardians/count` - Total guardian count
 - `/api/guardians/{scroll_id}` - Get guardian by Scroll ID
 - `/api/certificate/{scroll_id}` - Certificate data
-- `/api/transmissions` - CRUD for daily transmissions
+
+**Mission System:**
+- `/api/mission/status` - Current day, progress, dates
+
+**Transmissions (Admin Protected):**
+- `POST /api/transmissions` - Add transmission (admin)
+- `GET /api/transmissions` - List all transmissions
+- `DELETE /api/transmissions/{id}` - Remove transmission (admin)
+
+**Merchandise & Orders:**
+- `GET /api/merchandise` - Product catalog
+- `POST /api/orders` - Submit order request
+- `GET /api/orders` - View all orders (admin)
+- `PATCH /api/orders/{id}/status` - Update order status (admin)
 
 ### Frontend (React + Tailwind)
-- **Landing Page** - Hero with Sacred Geometry logo, Mission Clock, CTA
+- **Landing Page** - Hero, Mission Clock, stats
 - **Registration Portal** - Email signup, Scroll ID generation
-- **Certificate Page** - Official guardianship certificate display
-- **Transmissions Page** - Daily content feed with placeholders
+- **Certificate Page** - Official guardianship certificate
+- **Transmissions Page** - Daily content with video links
 - **Registry Page** - All guardians displayed
-- **Lookup Page** - Find existing Scroll ID by email
+- **Store Page** - Merchandise with Scroll ID verification
+  - Hoodie ($65), T-Shirt ($35), Cap ($30)
+  - Personalized preview with Scroll ID
+  - Cart, checkout, order submission
+- **Admin Login** - Password: `syncbridge325`
+- **Admin Dashboard** - Manage transmissions & orders
 
 ### Design System
 - Neon Noir aesthetic (Matte Black #050505 + Electric Blue #00CCFF)
-- Fonts: Rajdhani (headings), Space Grotesk (body), JetBrains Mono (data)
-- Sacred geometry logo with bridge motif
-- Glow effects, geometric patterns
+- Fonts: Rajdhani, Space Grotesk, JetBrains Mono
+- Sacred geometry logo, glow effects
+- Fully responsive with mobile hamburger menu
 
 ## Prioritized Backlog
 
 ### P0 (Completed)
 - [x] Guardian registration with Scroll ID
 - [x] Certificate display
-- [x] Mission Clock
+- [x] Mission Clock (Day 0/325)
 - [x] Guardian Registry
-- [x] Transmissions placeholders
+- [x] Admin panel with password auth
+- [x] Transmission management (add/delete with video links)
+- [x] Merchandise store with personalized previews
+- [x] Order request system with shipping collection
+- [x] Order management in admin dashboard
+- [x] Responsive design
 
 ### P1 (Future)
-- [ ] Admin panel for transmission management
-- [ ] Email notifications on registration
-- [ ] Downloadable/printable certificate PDF
-- [ ] Video embed support for transmissions
+- [ ] Email notifications for new orders
+- [ ] Downloadable certificate PDF
+- [ ] Video embed support in transmissions
+- [ ] Payment processing (Stripe integration)
 
 ### P2 (Deferred)
-- [ ] Circle.so integration (external community)
-- [ ] Shopify/Printful merchandise integration
+- [ ] Circle.so community integration
+- [ ] Shopify/Printful direct fulfillment
 - [ ] Telegram channel integration
-- [ ] AI voice/image generation for transmissions
 
-## Next Action Items
-1. Add admin authentication for transmission management
-2. Implement email notification system for new guardians
-3. Add certificate PDF download feature
-4. Enable video embed support in transmissions
+## Technical Notes
+- Admin password: `syncbridge325` (stored in ADMIN_PASSWORD env var)
+- Scroll ID format: SB-XXXX (sequential)
+- Order statuses: pending, processing, shipped, delivered, cancelled
