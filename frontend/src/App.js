@@ -1226,7 +1226,7 @@ const Store = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
               {Object.entries(merchandise).map(([type, product]) => (
                 <div key={type} className="card-base p-6 fade-in-up" data-testid={`product-${type}`}>
-                  <MerchPreview type={type} scrollId={verifiedGuardian.scroll_id} />
+                  <MerchPreview type={product.image_type || type} scrollId={verifiedGuardian.scroll_id} />
                   <h3 className="font-heading font-semibold text-lg uppercase tracking-wide mt-4 mb-2">
                     {product.name}
                   </h3>
@@ -1234,7 +1234,7 @@ const Store = () => {
                   <div className="flex items-center justify-between mb-4">
                     <span className="font-mono text-2xl text-[#00CCFF]">${product.price}</span>
                   </div>
-                  {product.sizes ? (
+                  {product.sizes && product.sizes.length > 0 ? (
                     <div className="grid grid-cols-5 gap-2 mb-4">
                       {product.sizes.map(size => (
                         <button
