@@ -403,6 +403,7 @@ async def create_product(product_data: ProductCreate, admin: bool = Depends(veri
         description=product_data.description,
         sizes=product_data.sizes,
         image_type=product_data.image_type,
+        image_url=product_data.image_url,
         created_at=datetime.now(timezone.utc).isoformat(),
         is_active=True
     )
