@@ -944,6 +944,732 @@ const Registry = () => {
   );
 };
 
+// Merchandise Preview Component
+const MerchPreview = ({ type, scrollId }) => {
+  const colors = {
+    hoodie: "#0A0A0A",
+    shirt: "#0A0A0A", 
+    hat: "#0A0A0A"
+  };
+  
+  return (
+    <div className="relative w-full aspect-square bg-[#111] border border-white/10 flex items-center justify-center overflow-hidden">
+      {/* Sacred geometry background pattern */}
+      <div className="absolute inset-0 opacity-5">
+        <svg width="100%" height="100%" viewBox="0 0 100 100">
+          <polygon points="50,10 90,30 90,70 50,90 10,70 10,30" fill="none" stroke="#00CCFF" strokeWidth="0.5"/>
+        </svg>
+      </div>
+      
+      {type === "hoodie" && (
+        <div className="relative">
+          <svg width="200" height="200" viewBox="0 0 200 200">
+            {/* Hoodie shape */}
+            <path d="M60,60 L60,180 L140,180 L140,60 L120,40 L80,40 Z" fill="#111" stroke="#00CCFF" strokeWidth="1"/>
+            {/* Hood */}
+            <path d="M80,40 Q100,20 120,40" fill="none" stroke="#00CCFF" strokeWidth="1"/>
+            {/* Logo on chest */}
+            <circle cx="100" cy="100" r="20" fill="none" stroke="#00CCFF" strokeWidth="1"/>
+            <polygon points="100,85 115,107 85,107" fill="none" stroke="#00CCFF" strokeWidth="1"/>
+            <polygon points="100,115 115,93 85,93" fill="none" stroke="#00CCFF" strokeWidth="1"/>
+          </svg>
+          {/* Scroll ID on sleeve */}
+          <div className="absolute right-6 top-20 transform rotate-90">
+            <span className="font-mono text-[#00CCFF] text-xs tracking-wider">{scrollId}</span>
+          </div>
+        </div>
+      )}
+      
+      {type === "shirt" && (
+        <div className="relative">
+          <svg width="180" height="180" viewBox="0 0 180 180">
+            {/* T-shirt shape */}
+            <path d="M40,50 L40,160 L140,160 L140,50 L120,30 L100,40 L80,30 L60,50 Z" fill="#111" stroke="#00CCFF" strokeWidth="1"/>
+            {/* Sleeves */}
+            <path d="M40,50 L20,70 L30,80 L40,70" fill="#111" stroke="#00CCFF" strokeWidth="1"/>
+            <path d="M140,50 L160,70 L150,80 L140,70" fill="#111" stroke="#00CCFF" strokeWidth="1"/>
+            {/* Logo on chest */}
+            <circle cx="90" cy="90" r="18" fill="none" stroke="#00CCFF" strokeWidth="1"/>
+            <polygon points="90,77 103,97 77,97" fill="none" stroke="#00CCFF" strokeWidth="1"/>
+            <polygon points="90,103 103,83 77,83" fill="none" stroke="#00CCFF" strokeWidth="1"/>
+          </svg>
+          <div className="absolute right-8 top-16">
+            <span className="font-mono text-[#00CCFF] text-xs tracking-wider">{scrollId}</span>
+          </div>
+        </div>
+      )}
+      
+      {type === "hat" && (
+        <div className="relative">
+          <svg width="180" height="140" viewBox="0 0 180 140">
+            {/* Cap shape */}
+            <ellipse cx="90" cy="100" rx="70" ry="20" fill="#111" stroke="#00CCFF" strokeWidth="1"/>
+            <path d="M30,100 Q30,50 90,40 Q150,50 150,100" fill="#111" stroke="#00CCFF" strokeWidth="1"/>
+            {/* Brim */}
+            <path d="M20,100 Q90,130 160,100" fill="none" stroke="#00CCFF" strokeWidth="1"/>
+            {/* Logo on front */}
+            <circle cx="90" cy="70" r="15" fill="none" stroke="#00CCFF" strokeWidth="1"/>
+            <polygon points="90,58 100,75 80,75" fill="none" stroke="#00CCFF" strokeWidth="0.8"/>
+            <polygon points="90,82 100,65 80,65" fill="none" stroke="#00CCFF" strokeWidth="0.8"/>
+          </svg>
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
+            <span className="font-mono text-[#00CCFF] text-xs tracking-wider">{scrollId}</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Store Page
+const Store = () => {
+  const [scrollId, setScrollId] = useState("");
+  const [verifiedGuardian, setVerifiedGuardian] = useState(null);
+  const [cart, setCart] = useState([]);
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [orderComplete, setOrderComplete] = useState(null);
+  const navigate = useNavigate();
+  
+  const merchandise = {
+    hoodie: { name: "Guardian Hoodie", price: 65.00, description: "Premium black hoodie with sacred geometry logo and your personalized Scroll ID", sizes: ["S", "M", "L", "XL", "XXL"] },
+    shirt: { name: "Guardian T-Shirt", price: 35.00, description: "Classic black t-shirt with sacred geometry logo and your personalized Scroll ID", sizes: ["S", "M", "L", "XL", "XXL"] },
+    hat: { name: "Guardian Cap", price: 30.00, description: "Black fitted cap with sacred geometry logo and your personalized Scroll ID", sizes: null }
+  };
+
+  const verifyGuardian = async () => {
+    if (!scrollId) {
+      toast.error("Please enter your Scroll ID");
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await axios.get(`${API}/guardians/${scrollId.toUpperCase()}`);
+      setVerifiedGuardian(response.data);
+      toast.success("Guardian verified!");
+    } catch (error) {
+      toast.error("Scroll ID not found. Please register first.");
+      setVerifiedGuardian(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addToCart = (type, size = null) => {
+    const existing = cart.find(item => item.type === type && item.size === size);
+    if (existing) {
+      setCart(cart.map(item => 
+        item.type === type && item.size === size 
+          ? { ...item, quantity: item.quantity + 1 }
+          : item
+      ));
+    } else {
+      setCart([...cart, { type, size, quantity: 1, price: merchandise[type].price }]);
+    }
+    toast.success(`Added ${merchandise[type].name} to cart`);
+  };
+
+  const removeFromCart = (index) => {
+    setCart(cart.filter((_, i) => i !== index));
+  };
+
+  const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+  const [shippingInfo, setShippingInfo] = useState({
+    name: "",
+    email: "",
+    address: "",
+    city: "",
+    state: "",
+    zip: "",
+    country: "USA"
+  });
+
+  const submitOrder = async () => {
+    if (!shippingInfo.name || !shippingInfo.email || !shippingInfo.address || !shippingInfo.city || !shippingInfo.state || !shippingInfo.zip) {
+      toast.error("Please fill in all shipping details");
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      const orderData = {
+        scroll_id: verifiedGuardian.scroll_id,
+        email: shippingInfo.email,
+        items: cart.map(item => ({
+          product_type: item.type,
+          size: item.size,
+          quantity: item.quantity
+        })),
+        shipping_name: shippingInfo.name,
+        shipping_address: shippingInfo.address,
+        shipping_city: shippingInfo.city,
+        shipping_state: shippingInfo.state,
+        shipping_zip: shippingInfo.zip,
+        shipping_country: shippingInfo.country
+      };
+      
+      const response = await axios.post(`${API}/orders`, orderData);
+      setOrderComplete(response.data);
+      setCart([]);
+      setShowCheckout(false);
+      toast.success("Order submitted successfully!");
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Failed to submit order");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (orderComplete) {
+    return (
+      <div className="min-h-screen pt-24 pb-16 px-6" data-testid="order-complete">
+        <div className="max-w-xl mx-auto text-center fade-in-up">
+          <div className="w-20 h-20 mx-auto mb-6 border-2 border-[#00CCFF] flex items-center justify-center glow-box">
+            <Check className="w-10 h-10 text-[#00CCFF]" />
+          </div>
+          <h1 className="font-heading font-bold text-3xl mb-4 uppercase tracking-wide">
+            Order <span className="text-[#00CCFF]">Submitted</span>
+          </h1>
+          <p className="text-[#94A3B8] mb-6">
+            Your order has been received and will be processed shortly.
+          </p>
+          <div className="card-base p-6 text-left mb-6">
+            <div className="text-[#475569] text-sm uppercase mb-2">Order ID</div>
+            <div className="font-mono text-[#00CCFF] mb-4">{orderComplete.id}</div>
+            <div className="text-[#475569] text-sm uppercase mb-2">Total</div>
+            <div className="font-mono text-2xl text-white">${orderComplete.total_amount.toFixed(2)}</div>
+          </div>
+          <p className="text-[#475569] text-sm mb-6">
+            We'll contact you at {orderComplete.email} with payment and shipping details.
+          </p>
+          <button onClick={() => navigate("/")} className="btn-primary">
+            Return Home
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen pt-24 pb-16 px-6" data-testid="store-page">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-12 fade-in-up">
+          <ShoppingBag className="w-10 h-10 text-[#00CCFF] mx-auto mb-4" />
+          <h1 className="font-heading font-bold text-3xl md:text-4xl mb-4 uppercase tracking-wide">
+            Guardian <span className="text-[#00CCFF]">Vault</span>
+          </h1>
+          <p className="text-[#94A3B8] max-w-xl mx-auto">
+            Official merchandise personalized with your Scroll ID. Wear your guardian identity.
+          </p>
+        </div>
+
+        {/* Verify Guardian */}
+        {!verifiedGuardian ? (
+          <div className="max-w-md mx-auto card-base p-8 fade-in-up">
+            <h2 className="font-heading font-semibold text-xl mb-4 uppercase tracking-wide text-center">
+              Enter Your Scroll ID
+            </h2>
+            <p className="text-[#94A3B8] text-sm text-center mb-6">
+              Your Scroll ID will be printed on your merchandise
+            </p>
+            <div className="flex gap-3">
+              <input
+                type="text"
+                value={scrollId}
+                onChange={(e) => setScrollId(e.target.value.toUpperCase())}
+                placeholder="SB-0001"
+                className="input-base flex-grow"
+                data-testid="scroll-id-input"
+              />
+              <button
+                onClick={verifyGuardian}
+                disabled={loading}
+                className="btn-primary whitespace-nowrap"
+                data-testid="verify-btn"
+              >
+                {loading ? "..." : "Verify"}
+              </button>
+            </div>
+            <p className="text-[#475569] text-xs text-center mt-4">
+              Don't have a Scroll ID?{" "}
+              <button onClick={() => navigate("/register")} className="text-[#00CCFF] hover:underline">
+                Register here
+              </button>
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* Verified Badge */}
+            <div className="text-center mb-8 fade-in-up">
+              <div className="inline-flex items-center gap-2 px-4 py-2 border border-[#00CCFF]/30 bg-[#00CCFF]/5">
+                <Check className="w-4 h-4 text-[#00CCFF]" />
+                <span className="font-mono text-[#00CCFF]">{verifiedGuardian.scroll_id}</span>
+                <span className="text-[#94A3B8]">verified</span>
+              </div>
+            </div>
+
+            {/* Products Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+              {Object.entries(merchandise).map(([type, product]) => (
+                <div key={type} className="card-base p-6 fade-in-up" data-testid={`product-${type}`}>
+                  <MerchPreview type={type} scrollId={verifiedGuardian.scroll_id} />
+                  <h3 className="font-heading font-semibold text-lg uppercase tracking-wide mt-4 mb-2">
+                    {product.name}
+                  </h3>
+                  <p className="text-[#94A3B8] text-sm mb-4">{product.description}</p>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="font-mono text-2xl text-[#00CCFF]">${product.price}</span>
+                  </div>
+                  {product.sizes ? (
+                    <div className="grid grid-cols-5 gap-2 mb-4">
+                      {product.sizes.map(size => (
+                        <button
+                          key={size}
+                          onClick={() => addToCart(type, size)}
+                          className="py-2 border border-white/20 text-sm hover:border-[#00CCFF] hover:text-[#00CCFF] transition-colors"
+                          data-testid={`add-${type}-${size}`}
+                        >
+                          {size}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => addToCart(type)}
+                      className="btn-primary w-full"
+                      data-testid={`add-${type}`}
+                    >
+                      Add to Cart
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Cart */}
+            {cart.length > 0 && (
+              <div className="card-base p-6 max-w-2xl mx-auto fade-in-up" data-testid="cart">
+                <h3 className="font-heading font-semibold text-xl uppercase tracking-wide mb-4 flex items-center gap-2">
+                  <Package className="w-5 h-5 text-[#00CCFF]" />
+                  Your Cart
+                </h3>
+                <div className="space-y-4 mb-6">
+                  {cart.map((item, index) => (
+                    <div key={index} className="flex items-center justify-between py-3 border-b border-white/10">
+                      <div>
+                        <span className="font-heading uppercase">{merchandise[item.type].name}</span>
+                        {item.size && <span className="text-[#94A3B8] ml-2">Size: {item.size}</span>}
+                        <span className="text-[#94A3B8] ml-2">× {item.quantity}</span>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <span className="font-mono text-[#00CCFF]">${(item.price * item.quantity).toFixed(2)}</span>
+                        <button onClick={() => removeFromCart(index)} className="text-[#FF3B30] hover:text-red-400">
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center justify-between mb-6">
+                  <span className="font-heading uppercase text-lg">Total</span>
+                  <span className="font-mono text-2xl text-[#00CCFF]">${cartTotal.toFixed(2)}</span>
+                </div>
+                
+                {!showCheckout ? (
+                  <button
+                    onClick={() => setShowCheckout(true)}
+                    className="btn-primary w-full"
+                    data-testid="checkout-btn"
+                  >
+                    Proceed to Checkout
+                  </button>
+                ) : (
+                  <div className="space-y-4" data-testid="checkout-form">
+                    <h4 className="font-heading uppercase tracking-wide text-[#94A3B8]">Shipping Information</h4>
+                    <input
+                      type="text"
+                      placeholder="Full Name"
+                      value={shippingInfo.name}
+                      onChange={(e) => setShippingInfo({...shippingInfo, name: e.target.value})}
+                      className="input-base"
+                    />
+                    <input
+                      type="email"
+                      placeholder="Email"
+                      value={shippingInfo.email}
+                      onChange={(e) => setShippingInfo({...shippingInfo, email: e.target.value})}
+                      className="input-base"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Street Address"
+                      value={shippingInfo.address}
+                      onChange={(e) => setShippingInfo({...shippingInfo, address: e.target.value})}
+                      className="input-base"
+                    />
+                    <div className="grid grid-cols-2 gap-4">
+                      <input
+                        type="text"
+                        placeholder="City"
+                        value={shippingInfo.city}
+                        onChange={(e) => setShippingInfo({...shippingInfo, city: e.target.value})}
+                        className="input-base"
+                      />
+                      <input
+                        type="text"
+                        placeholder="State"
+                        value={shippingInfo.state}
+                        onChange={(e) => setShippingInfo({...shippingInfo, state: e.target.value})}
+                        className="input-base"
+                      />
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="ZIP Code"
+                      value={shippingInfo.zip}
+                      onChange={(e) => setShippingInfo({...shippingInfo, zip: e.target.value})}
+                      className="input-base"
+                    />
+                    <button
+                      onClick={submitOrder}
+                      disabled={loading}
+                      className="btn-primary w-full"
+                      data-testid="submit-order-btn"
+                    >
+                      {loading ? "Submitting..." : "Submit Order Request"}
+                    </button>
+                    <p className="text-[#475569] text-xs text-center">
+                      We'll contact you with payment details after reviewing your order.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Admin Login Page
+const AdminLogin = () => {
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await axios.post(`${API}/admin/login`, {}, {
+        auth: { username: "admin", password }
+      });
+      sessionStorage.setItem("adminAuth", btoa(`admin:${password}`));
+      toast.success("Login successful");
+      navigate("/admin/dashboard");
+    } catch (error) {
+      toast.error("Invalid password");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen pt-24 pb-16 px-6 flex items-center justify-center" data-testid="admin-login">
+      <div className="max-w-md w-full card-base p-8">
+        <div className="text-center mb-8">
+          <Lock className="w-12 h-12 text-[#00CCFF] mx-auto mb-4" />
+          <h1 className="font-heading font-bold text-2xl uppercase tracking-wide">
+            Admin <span className="text-[#00CCFF]">Access</span>
+          </h1>
+        </div>
+        <form onSubmit={handleLogin}>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter admin password"
+            className="input-base mb-6"
+            data-testid="admin-password"
+          />
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn-primary w-full"
+            data-testid="admin-login-btn"
+          >
+            {loading ? "Authenticating..." : "Login"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// Admin Dashboard
+const AdminDashboard = () => {
+  const [transmissions, setTransmissions] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [activeTab, setActiveTab] = useState("transmissions");
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newTransmission, setNewTransmission] = useState({
+    title: "",
+    description: "",
+    video_url: "",
+    day_number: 1
+  });
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const authHeader = sessionStorage.getItem("adminAuth");
+  
+  useEffect(() => {
+    if (!authHeader) {
+      navigate("/admin");
+      return;
+    }
+    fetchData();
+  }, [authHeader, navigate]);
+
+  const fetchData = async () => {
+    try {
+      const [transRes, ordersRes] = await Promise.all([
+        axios.get(`${API}/transmissions`),
+        axios.get(`${API}/orders`, {
+          headers: { Authorization: `Basic ${authHeader}` }
+        })
+      ]);
+      setTransmissions(transRes.data);
+      setOrders(ordersRes.data);
+    } catch (error) {
+      if (error.response?.status === 401) {
+        sessionStorage.removeItem("adminAuth");
+        navigate("/admin");
+      }
+    }
+  };
+
+  const addTransmission = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await axios.post(`${API}/transmissions`, newTransmission, {
+        headers: { Authorization: `Basic ${authHeader}` }
+      });
+      toast.success("Transmission added");
+      setNewTransmission({ title: "", description: "", video_url: "", day_number: 1 });
+      setShowAddForm(false);
+      fetchData();
+    } catch (error) {
+      toast.error("Failed to add transmission");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteTransmission = async (id) => {
+    if (!window.confirm("Delete this transmission?")) return;
+    try {
+      await axios.delete(`${API}/transmissions/${id}`, {
+        headers: { Authorization: `Basic ${authHeader}` }
+      });
+      toast.success("Transmission deleted");
+      fetchData();
+    } catch (error) {
+      toast.error("Failed to delete");
+    }
+  };
+
+  const updateOrderStatus = async (orderId, status) => {
+    try {
+      await axios.patch(`${API}/orders/${orderId}/status?status=${status}`, {}, {
+        headers: { Authorization: `Basic ${authHeader}` }
+      });
+      toast.success("Order status updated");
+      fetchData();
+    } catch (error) {
+      toast.error("Failed to update status");
+    }
+  };
+
+  const logout = () => {
+    sessionStorage.removeItem("adminAuth");
+    navigate("/admin");
+  };
+
+  return (
+    <div className="min-h-screen pt-24 pb-16 px-6" data-testid="admin-dashboard">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="font-heading font-bold text-2xl uppercase tracking-wide">
+            Admin <span className="text-[#00CCFF]">Dashboard</span>
+          </h1>
+          <button onClick={logout} className="text-[#94A3B8] hover:text-white text-sm">
+            Logout
+          </button>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-4 mb-8 border-b border-white/10">
+          <button
+            onClick={() => setActiveTab("transmissions")}
+            className={`pb-3 px-4 font-heading uppercase tracking-wider text-sm transition-colors ${
+              activeTab === "transmissions" ? "text-[#00CCFF] border-b-2 border-[#00CCFF]" : "text-[#94A3B8]"
+            }`}
+          >
+            Transmissions ({transmissions.length})
+          </button>
+          <button
+            onClick={() => setActiveTab("orders")}
+            className={`pb-3 px-4 font-heading uppercase tracking-wider text-sm transition-colors ${
+              activeTab === "orders" ? "text-[#00CCFF] border-b-2 border-[#00CCFF]" : "text-[#94A3B8]"
+            }`}
+          >
+            Orders ({orders.length})
+          </button>
+        </div>
+
+        {/* Transmissions Tab */}
+        {activeTab === "transmissions" && (
+          <div>
+            <button
+              onClick={() => setShowAddForm(!showAddForm)}
+              className="btn-primary mb-6 flex items-center gap-2"
+              data-testid="add-transmission-btn"
+            >
+              <Plus size={18} />
+              Add Transmission
+            </button>
+
+            {showAddForm && (
+              <form onSubmit={addTransmission} className="card-base p-6 mb-6" data-testid="add-transmission-form">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <input
+                    type="number"
+                    placeholder="Day Number"
+                    value={newTransmission.day_number}
+                    onChange={(e) => setNewTransmission({...newTransmission, day_number: parseInt(e.target.value)})}
+                    className="input-base"
+                    min="1"
+                    max="325"
+                    required
+                  />
+                  <input
+                    type="text"
+                    placeholder="Title"
+                    value={newTransmission.title}
+                    onChange={(e) => setNewTransmission({...newTransmission, title: e.target.value})}
+                    className="input-base"
+                    required
+                  />
+                </div>
+                <textarea
+                  placeholder="Description"
+                  value={newTransmission.description}
+                  onChange={(e) => setNewTransmission({...newTransmission, description: e.target.value})}
+                  className="input-base mb-4 min-h-[100px]"
+                  required
+                />
+                <input
+                  type="url"
+                  placeholder="Video URL (YouTube, Vimeo, etc.)"
+                  value={newTransmission.video_url}
+                  onChange={(e) => setNewTransmission({...newTransmission, video_url: e.target.value})}
+                  className="input-base mb-4"
+                />
+                <div className="flex gap-4">
+                  <button type="submit" disabled={loading} className="btn-primary">
+                    {loading ? "Adding..." : "Add Transmission"}
+                  </button>
+                  <button type="button" onClick={() => setShowAddForm(false)} className="text-[#94A3B8]">
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            )}
+
+            <div className="space-y-4">
+              {transmissions.map((t) => (
+                <div key={t.id} className="card-base p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 border border-[#00CCFF]/30 flex items-center justify-center">
+                      <span className="font-mono text-[#00CCFF]">{t.day_number}</span>
+                    </div>
+                    <div>
+                      <h3 className="font-heading uppercase">{t.title}</h3>
+                      <p className="text-[#94A3B8] text-sm truncate max-w-md">{t.description}</p>
+                      {t.video_url && (
+                        <a href={t.video_url} target="_blank" rel="noreferrer" className="text-[#00CCFF] text-xs flex items-center gap-1">
+                          <Play size={12} /> Video Link
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                  <button onClick={() => deleteTransmission(t.id)} className="text-[#FF3B30] hover:text-red-400 p-2">
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              ))}
+              {transmissions.length === 0 && (
+                <p className="text-[#475569] text-center py-8">No transmissions yet. Add your first one!</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Orders Tab */}
+        {activeTab === "orders" && (
+          <div className="space-y-4">
+            {orders.map((order) => (
+              <div key={order.id} className="card-base p-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <div className="font-mono text-[#00CCFF] text-sm">{order.id}</div>
+                    <div className="font-heading text-lg">{order.shipping_name}</div>
+                    <div className="text-[#94A3B8] text-sm">{order.email}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-mono text-xl text-[#00CCFF]">${order.total_amount.toFixed(2)}</div>
+                    <select
+                      value={order.status}
+                      onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                      className="mt-2 bg-transparent border border-white/20 text-sm px-2 py-1 text-white"
+                    >
+                      <option value="pending" className="bg-[#0A0A0A]">Pending</option>
+                      <option value="processing" className="bg-[#0A0A0A]">Processing</option>
+                      <option value="shipped" className="bg-[#0A0A0A]">Shipped</option>
+                      <option value="delivered" className="bg-[#0A0A0A]">Delivered</option>
+                      <option value="cancelled" className="bg-[#0A0A0A]">Cancelled</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="border-t border-white/10 pt-4">
+                  <div className="text-[#475569] text-xs uppercase mb-2">Items (Scroll ID: {order.scroll_id})</div>
+                  {order.items.map((item, i) => (
+                    <div key={i} className="text-sm text-[#94A3B8]">
+                      {item.product_name} {item.size && `(${item.size})`} × {item.quantity} - ${item.item_total.toFixed(2)}
+                    </div>
+                  ))}
+                  <div className="mt-3 text-xs text-[#475569]">
+                    Ship to: {order.shipping_address}, {order.shipping_city}, {order.shipping_state} {order.shipping_zip}
+                  </div>
+                </div>
+              </div>
+            ))}
+            {orders.length === 0 && (
+              <p className="text-[#475569] text-center py-8">No orders yet.</p>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // Footer Component
 const Footer = () => (
   <footer className="py-12 px-6 border-t border-white/10 bg-[#050505]">
