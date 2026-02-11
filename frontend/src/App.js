@@ -99,6 +99,8 @@ const Navigation = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const { guardian, logout } = useGuardian();
+
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -130,13 +132,22 @@ const Navigation = () => {
             Store
           </NavLink>
         </div>
-        <NavLink
-          to="/register"
-          className="btn-primary hidden md:block"
-          data-testid="nav-cta"
-        >
-          Become Guardian
-        </NavLink>
+        {guardian ? (
+          <div className="hidden md:flex items-center gap-3">
+            <span className="font-mono text-[#00CCFF] text-sm">{guardian.scroll_id}</span>
+            <button onClick={logout} className="text-[#94A3B8] hover:text-white text-sm">
+              Logout
+            </button>
+          </div>
+        ) : (
+          <NavLink
+            to="/login"
+            className="btn-primary hidden md:block"
+            data-testid="nav-cta"
+          >
+            Login
+          </NavLink>
+        )}
         {/* Mobile Menu Button */}
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
