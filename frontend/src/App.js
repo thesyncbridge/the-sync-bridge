@@ -2212,30 +2212,33 @@ function App() {
   return (
     <div className="App">
       <BrowserRouter>
-        <Toaster
-          position="top-center"
-          toastOptions={{
-            style: {
-              background: "#0A0A0A",
-              border: "1px solid rgba(0, 204, 255, 0.3)",
-              color: "#fff",
-              fontFamily: "Space Grotesk, sans-serif",
-            },
-          }}
-        />
-        <Navigation />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/lookup" element={<Lookup />} />
-          <Route path="/certificate/:scrollId" element={<Certificate />} />
-          <Route path="/transmissions" element={<Transmissions />} />
-          <Route path="/registry" element={<Registry />} />
-          <Route path="/store" element={<Store />} />
-          <Route path="/admin" element={<AdminLogin />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        </Routes>
-        <Footer />
+        <GuardianProvider>
+          <Toaster
+            position="top-center"
+            toastOptions={{
+              style: {
+                background: "#0A0A0A",
+                border: "1px solid rgba(0, 204, 255, 0.3)",
+                color: "#fff",
+                fontFamily: "Space Grotesk, sans-serif",
+              },
+            }}
+          />
+          <Navigation />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<GuardianLogin />} />
+            <Route path="/lookup" element={<Lookup />} />
+            <Route path="/certificate/:scrollId" element={<Certificate />} />
+            <Route path="/transmissions" element={<Transmissions />} />
+            <Route path="/registry" element={<Registry />} />
+            <Route path="/store" element={<Store />} />
+            <Route path="/admin" element={<AdminLogin />} />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          </Routes>
+          <Footer />
+        </GuardianProvider>
       </BrowserRouter>
     </div>
   );
