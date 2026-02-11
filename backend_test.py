@@ -545,26 +545,64 @@ def main():
     print("\n🔐 Testing Admin Login...")
     admin_success, auth_string = tester.test_admin_login()
     
+    transmission_id = None
     if admin_success:
         # Test 11: Add Transmission (Admin)
         print("\n➕ Testing Add Transmission (Admin)...")
         add_success, transmission_data = tester.test_add_transmission(auth_string)
         
         if add_success:
-            # Test 12: Delete Transmission (Admin)
+            transmission_id = transmission_data.get('id')
+            
+            # Test commenting system with the new transmission
+            print(f"\n💬 Testing Comment System with transmission {transmission_id}...")
+            
+            # Test 12: Create Comment
+            comment_success, comment_data = tester.test_create_comment(transmission_id, scroll_id)
+            
+            if comment_success:
+                comment_id = comment_data.get('id')
+                
+                # Test 13: Get Comments
+                print(f"\n📖 Testing Get Comments for transmission {transmission_id}...")
+                tester.test_get_comments(transmission_id)
+                
+                # Test 14: Create Reply
+                print(f"\n↩️ Testing Create Reply to comment {comment_id}...")
+                reply_success, reply_data = tester.test_create_reply(transmission_id, scroll_id, comment_id)
+                
+                # Test 15: Admin Create Comment
+                print(f"\n👑 Testing Admin Create Comment...")
+                admin_comment_success, admin_comment_data = tester.test_admin_create_comment(auth_string, transmission_id)
+                
+                # Test 16: Get All Comments (Admin)
+                print(f"\n📋 Testing Get All Comments (Admin)...")
+                tester.test_get_all_comments_admin(auth_string)
+                
+                # Test 17: Delete Own Comment
+                print(f"\n🗑️ Testing Delete Own Comment...")
+                tester.test_delete_own_comment(comment_id, scroll_id)
+                
+                # Test 18: Admin Delete Comment
+                if admin_comment_success:
+                    admin_comment_id = admin_comment_data.get('id')
+                    print(f"\n👑🗑️ Testing Admin Delete Comment...")
+                    tester.test_admin_delete_comment(auth_string, admin_comment_id)
+            
+            # Test 19: Delete Transmission (Admin) - Clean up
             print("\n🗑️ Testing Delete Transmission (Admin)...")
-            tester.test_delete_transmission(auth_string, transmission_data.get('id'))
+            tester.test_delete_transmission(auth_string, transmission_id)
     
-    # Test 13: Merchandise
+    # Test 20: Merchandise
     print("\n🛍️ Testing Merchandise...")
     tester.test_merchandise()
     
-    # Test 14: Create Order
+    # Test 21: Create Order
     print(f"\n📦 Testing Create Order with {scroll_id}...")
     order_success, order_data = tester.test_create_order(scroll_id)
     
     if admin_success:
-        # Test 15: Get Orders (Admin)
+        # Test 22: Get Orders (Admin)
         print("\n📋 Testing Get Orders (Admin)...")
         tester.test_get_orders(auth_string)
     
