@@ -1139,6 +1139,7 @@ const TransmissionCard = ({ transmission, index }) => {
         </div>
       )}
     </div>
+    </>
   );
 };
 
