@@ -1846,7 +1846,7 @@ const AdminDashboard = () => {
         headers: { Authorization: `Basic ${authHeader}` }
       });
       toast.success("Product added");
-      setNewProduct({ product_type: "", name: "", price: 0, description: "", sizes: "", image_type: "hoodie" });
+      setNewProduct({ product_type: "", name: "", price: 0, description: "", sizes: "", image_type: "hoodie", image_url: "" });
       setShowAddProductForm(false);
       fetchData();
     } catch (error) {
@@ -1866,6 +1866,19 @@ const AdminDashboard = () => {
       fetchData();
     } catch (error) {
       toast.error("Failed to delete");
+    }
+  };
+
+  const deleteOrder = async (id) => {
+    if (!window.confirm("Delete this order? This cannot be undone.")) return;
+    try {
+      await axios.delete(`${API}/orders/${id}`, {
+        headers: { Authorization: `Basic ${authHeader}` }
+      });
+      toast.success("Order deleted");
+      fetchData();
+    } catch (error) {
+      toast.error("Failed to delete order");
     }
   };
 
