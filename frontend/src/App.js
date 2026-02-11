@@ -1484,7 +1484,26 @@ const Store = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
               {Object.entries(merchandise).map(([type, product]) => (
                 <div key={type} className="card-base p-6 fade-in-up" data-testid={`product-${type}`}>
-                  <MerchPreview type={product.image_type || type} scrollId={verifiedGuardian.scroll_id} />
+                  {/* Product Image - Custom URL or Generated Preview */}
+                  {product.image_url ? (
+                    <div className="relative w-full aspect-square bg-[#111] border border-white/10 flex items-center justify-center overflow-hidden">
+                      <img 
+                        src={product.image_url} 
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+                      />
+                      <div className="hidden w-full h-full items-center justify-center">
+                        <MerchPreview type={product.image_type || type} scrollId={verifiedGuardian.scroll_id} />
+                      </div>
+                      {/* Scroll ID overlay on images */}
+                      <div className="absolute bottom-2 right-2 bg-black/80 px-2 py-1">
+                        <span className="font-mono text-[#00CCFF] text-xs">{verifiedGuardian.scroll_id}</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <MerchPreview type={product.image_type || type} scrollId={verifiedGuardian.scroll_id} />
+                  )}
                   <h3 className="font-heading font-semibold text-lg uppercase tracking-wide mt-4 mb-2">
                     {product.name}
                   </h3>
