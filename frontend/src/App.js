@@ -96,6 +96,9 @@ const Navigation = () => {
           <NavLink to="/registry" className="nav-link" data-testid="nav-registry">
             Registry
           </NavLink>
+          <NavLink to="/store" className="nav-link" data-testid="nav-store">
+            Store
+          </NavLink>
         </div>
         <NavLink
           to="/register"
