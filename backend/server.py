@@ -126,6 +126,27 @@ class Order(BaseModel):
     status: str = "pending"
     created_at: str
 
+# Product Models
+class ProductCreate(BaseModel):
+    product_type: str  # unique identifier like "hoodie", "shirt", "mug"
+    name: str
+    price: float
+    description: str
+    sizes: Optional[List[str]] = None  # None for items without sizes
+    image_type: str = "hoodie"  # hoodie, shirt, hat for preview rendering
+
+class Product(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    product_type: str
+    name: str
+    price: float
+    description: str
+    sizes: Optional[List[str]] = None
+    image_type: str = "hoodie"
+    created_at: str
+    is_active: bool = True
+
 # ============ HELPER FUNCTIONS ============
 
 async def generate_scroll_id() -> str:
