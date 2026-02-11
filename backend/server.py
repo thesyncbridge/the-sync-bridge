@@ -58,12 +58,18 @@ DEFAULT_MERCHANDISE = {
 
 class GuardianCreate(BaseModel):
     email: EmailStr
+    password: str
+
+class GuardianLogin(BaseModel):
+    scroll_id: str
+    password: str
 
 class Guardian(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     email: str
     scroll_id: str
+    password_hash: str
     registered_at: str
     is_certified: bool = True
 
