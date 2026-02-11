@@ -395,14 +395,25 @@ class TheSyncBridgeAPITester:
 
     def test_delete_own_comment(self, comment_id, scroll_id):
         """Test deleting own comment (guardian)"""
-        success, response = self.run_test(
-            "Delete Own Comment",
-            "DELETE",
-            f"comments/{comment_id}/user",
-            200,
-            params={"scroll_id": scroll_id}
-        )
-        return success
+        url = f"{self.api_url}/comments/{comment_id}/user?scroll_id={scroll_id}"
+        self.tests_run += 1
+        print(f"\n🔍 Testing Delete Own Comment...")
+        print(f"   URL: {url}")
+        
+        try:
+            response = requests.delete(url)
+            success = response.status_code == 200
+            
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                return True
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                return False
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False
 
     def test_admin_create_comment(self, auth_string, transmission_id):
         """Test admin creating comment as ADMIN"""
