@@ -1045,16 +1045,14 @@ const TransmissionCard = ({ transmission, index }) => {
           {/* Action Buttons */}
           <div className="flex items-center gap-4 flex-wrap">
             {transmission.video_url ? (
-              <a
-                href={transmission.video_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-[#00CCFF] hover:underline text-sm font-heading uppercase tracking-wider"
+              <button
+                onClick={() => setShowVideo(true)}
+                className="flex items-center gap-2 text-[#00CCFF] hover:text-white text-sm font-heading uppercase tracking-wider transition-colors"
+                data-testid={`watch-${transmission.day_number}`}
               >
                 <Play size={16} />
-                Watch
-                <ExternalLink size={14} />
-              </a>
+                Watch Transmission
+              </button>
             ) : (
               <span className="flex items-center gap-2 text-[#475569] text-sm font-heading uppercase tracking-wider">
                 <Clock size={16} />
