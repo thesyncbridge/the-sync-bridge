@@ -416,21 +416,33 @@ const Home = () => {
 // Registration Page
 const Register = () => {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [guardian, setGuardian] = useState(null);
+  const { login } = useGuardian();
   const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    if (!email) {
-      toast.error("Please enter your email");
+    if (!email || !password) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match");
       return;
     }
 
     setLoading(true);
     try {
-      const response = await axios.post(`${API}/guardians/register`, { email });
+      const response = await axios.post(`${API}/guardians/register`, { email, password });
       setGuardian(response.data);
+      login(response.data);
       toast.success("Welcome to the Registry, Guardian!");
     } catch (error) {
       toast.error(error.response?.data?.detail || "Registration failed");
@@ -503,7 +515,7 @@ const Register = () => {
             Join The <span className="text-[#00CCFF]">Registry</span>
           </h1>
           <p className="text-[#94A3B8]">
-            Enter your email to receive your unique Scroll ID and become a Blue Guardian.
+            Create your account to receive your unique Scroll ID and become a Blue Guardian.
           </p>
         </div>
 
@@ -533,6 +545,43 @@ const Register = () => {
             </div>
           </div>
 
+          <div className="mb-6">
+            <label className="block text-[#94A3B8] text-sm uppercase tracking-wider mb-3 font-heading">
+              Password
+            </label>
+            <div className="relative">
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#475569]" />
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Minimum 6 characters"
+                className="input-base pl-12"
+                data-testid="password-input"
+                required
+                minLength={6}
+              />
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <label className="block text-[#94A3B8] text-sm uppercase tracking-wider mb-3 font-heading">
+              Confirm Password
+            </label>
+            <div className="relative">
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#475569]" />
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm your password"
+                className="input-base pl-12"
+                data-testid="confirm-password-input"
+                required
+              />
+            </div>
+          </div>
+
           <button
             type="submit"
             disabled={loading}
@@ -542,12 +591,12 @@ const Register = () => {
             {loading ? (
               <>
                 <div className="w-5 h-5 border-2 border-[#00CCFF] border-t-transparent rounded-full animate-spin" />
-                Processing...
+                Creating Account...
               </>
             ) : (
               <>
                 <Zap size={18} />
-                Generate Scroll ID
+                Create Account
               </>
             )}
           </button>
@@ -555,13 +604,13 @@ const Register = () => {
 
         <div className="mt-8 text-center">
           <p className="text-[#475569] text-sm">
-            Already registered?{" "}
+            Already have an account?{" "}
             <button
-              onClick={() => navigate("/lookup")}
+              onClick={() => navigate("/login")}
               className="text-[#00CCFF] hover:underline"
-              data-testid="lookup-link"
+              data-testid="login-link"
             >
-              Look up your Scroll ID
+              Login here
             </button>
           </p>
         </div>
