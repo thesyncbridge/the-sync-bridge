@@ -184,6 +184,159 @@ class TheSyncBridgeAPITester:
             print(f"   Transmissions found: {len(response)}")
         return success
 
+    def test_admin_login(self, password="syncbridge325"):
+        """Test admin login"""
+        import base64
+        auth_string = base64.b64encode(f"admin:{password}".encode()).decode()
+        headers = {'Authorization': f'Basic {auth_string}', 'Content-Type': 'application/json'}
+        
+        url = f"{self.api_url}/admin/login"
+        self.tests_run += 1
+        print(f"\n🔍 Testing Admin Login...")
+        print(f"   URL: {url}")
+        
+        try:
+            response = requests.post(url, headers=headers)
+            success = response.status_code == 200
+            
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                return True, auth_string
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                return False, None
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False, None
+
+    def test_add_transmission(self, auth_string):
+        """Test adding a transmission (admin only)"""
+        headers = {'Authorization': f'Basic {auth_string}', 'Content-Type': 'application/json'}
+        data = {
+            "title": "Test Transmission",
+            "description": "This is a test transmission for API testing",
+            "video_url": "https://youtube.com/watch?v=test123",
+            "day_number": 999
+        }
+        
+        url = f"{self.api_url}/transmissions"
+        self.tests_run += 1
+        print(f"\n🔍 Testing Add Transmission...")
+        
+        try:
+            response = requests.post(url, json=data, headers=headers)
+            success = response.status_code == 200
+            
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                response_data = response.json()
+                print(f"   Created transmission ID: {response_data.get('id')}")
+                return True, response_data
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                return False, None
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False, None
+
+    def test_delete_transmission(self, auth_string, transmission_id):
+        """Test deleting a transmission (admin only)"""
+        headers = {'Authorization': f'Basic {auth_string}', 'Content-Type': 'application/json'}
+        
+        url = f"{self.api_url}/transmissions/{transmission_id}"
+        self.tests_run += 1
+        print(f"\n🔍 Testing Delete Transmission...")
+        
+        try:
+            response = requests.delete(url, headers=headers)
+            success = response.status_code == 200
+            
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                return True
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                return False
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False
+
+    def test_merchandise(self):
+        """Test merchandise endpoint"""
+        success, response = self.run_test(
+            "Merchandise",
+            "GET",
+            "merchandise",
+            200
+        )
+        if success:
+            expected_products = ['hoodie', 'shirt', 'hat']
+            for product in expected_products:
+                if product not in response:
+                    print(f"❌ Missing product: {product}")
+                    return False
+                else:
+                    print(f"   {product}: ${response[product]['price']}")
+        return success
+
+    def test_create_order(self, scroll_id):
+        """Test creating an order"""
+        data = {
+            "scroll_id": scroll_id,
+            "email": "test@syncbridge.com",
+            "items": [
+                {"product_type": "hoodie", "size": "L", "quantity": 1},
+                {"product_type": "hat", "quantity": 1}
+            ],
+            "shipping_name": "Test Guardian",
+            "shipping_address": "123 Test St",
+            "shipping_city": "Test City",
+            "shipping_state": "TS",
+            "shipping_zip": "12345",
+            "shipping_country": "USA"
+        }
+        
+        success, response = self.run_test(
+            "Create Order",
+            "POST",
+            "orders",
+            200,
+            data=data
+        )
+        if success:
+            print(f"   Order ID: {response.get('id')}")
+            print(f"   Total: ${response.get('total_amount')}")
+            return True, response
+        return False, None
+
+    def test_get_orders(self, auth_string):
+        """Test getting orders (admin only)"""
+        headers = {'Authorization': f'Basic {auth_string}', 'Content-Type': 'application/json'}
+        
+        url = f"{self.api_url}/orders"
+        self.tests_run += 1
+        print(f"\n🔍 Testing Get Orders (Admin)...")
+        
+        try:
+            response = requests.get(url, headers=headers)
+            success = response.status_code == 200
+            
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                orders = response.json()
+                print(f"   Orders found: {len(orders)}")
+                return True, orders
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                return False, None
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False, None
+
 def main():
     print("🚀 Starting TheSyncBridge API Tests")
     print("=" * 50)
