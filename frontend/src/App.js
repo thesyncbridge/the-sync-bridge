@@ -3,7 +3,7 @@ import "@/App.css";
 import { BrowserRouter, Routes, Route, NavLink, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Toaster, toast } from "sonner";
-import { Triangle, Hexagon, Activity, Zap, Globe, ChevronRight, Clock, Users, Award, Play, ExternalLink, Mail, Check, Menu, X, ShoppingBag, Trash2, Plus, Lock, Package, Shirt } from "lucide-react";
+import { Triangle, Hexagon, Activity, Zap, Globe, ChevronRight, Clock, Users, Award, Play, ExternalLink, Mail, Check, Menu, X, ShoppingBag, Trash2, Plus, Lock, Package, Shirt, MessageCircle, Reply, Send } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
